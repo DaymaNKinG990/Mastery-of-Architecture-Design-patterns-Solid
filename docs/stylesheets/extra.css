@@ -72,6 +72,72 @@ h1, h2, h3, h4, h5, h6 {
   outline: none !important;
 }
 
+/* Исправление проблемы 2: нормальные цвета для навигационных ссылок после hover */
+.md-nav__link {
+  color: var(--md-default-fg-color--primary) !important;
+  transition: color 0.2s ease !important;
+}
+
+.md-nav__link:hover {
+  color: var(--md-accent-fg-color) !important;
+}
+
+/* После ухода курсора возвращаем нормальный цвет */
+.md-nav__link:not(:hover):not(.md-nav__link--active) {
+  color: var(--md-default-fg-color--primary) !important;
+  opacity: 0.7;
+}
+
+/* Исправление проблемы 3 и 4: эмодзи не должны затемняться */
+.md-nav__link .emoji,
+.md-typeset .emoji,
+.md-typeset a .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Эмодзи в ссылках контента не должны затемняться */
+.md-typeset a .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Эмодзи в навигации всегда нормальные */
+.md-nav__link .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Исправление проблемы 2: стили для верхней навигации (tabs) */
+.md-header__inner .md-nav__link,
+.md-tabs__link {
+  color: var(--md-default-fg-color--primary) !important;
+  transition: color 0.2s ease !important;
+}
+
+.md-header__inner .md-nav__link:hover,
+.md-tabs__link:hover {
+  color: var(--md-accent-fg-color) !important;
+}
+
+/* После ухода курсора возвращаем нормальный цвет для tabs */
+.md-tabs__link:not(:hover):not(.md-tabs__link--active) {
+  color: var(--md-default-fg-color--primary) !important;
+  opacity: 0.7;
+}
+
+.md-header__inner .md-nav__link:not(:hover):not(.md-nav__link--active) {
+  color: var(--md-default-fg-color--primary) !important;
+  opacity: 0.7;
+}
+
+/* Эмодзи в верхней навигации */
+.md-tabs__link .emoji,
+.md-header__inner .md-nav__link .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
 /* Улучшение отображения inline кода */
 .md-typeset code {
   padding: 0.2em 0.4em;

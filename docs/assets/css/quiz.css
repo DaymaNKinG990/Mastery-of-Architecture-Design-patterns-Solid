@@ -1190,6 +1190,17 @@ tbody tr:hover {
     color: var(--md-accent-fg-color--dark);
 }
 
+/* Исправление проблемы 4: эмодзи в ссылках контента не должны затемняться */
+.md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button) .emoji {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+.md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button):hover .emoji {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
 .md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button)::after {
     content: '';
     position: absolute;
