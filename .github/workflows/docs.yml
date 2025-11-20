@@ -35,17 +35,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv venv
-        source .venv/bin/activate
-        uv pip install -e .[docs]
+        uv sync
 
     - name: Setup Pages
       uses: actions/configure-pages@v4
 
     - name: Build documentation
       run: |
-        source .venv/bin/activate
-        mkdocs build --clean
+        uv run mkdocs build --clean
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3

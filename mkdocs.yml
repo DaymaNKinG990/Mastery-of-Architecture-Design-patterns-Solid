@@ -1,13 +1,13 @@
 site_name: Мастерство архитектуры и паттернов проектирования
 site_description: Полный курс по SOLID принципам, паттернам проектирования, архитектуре ПО и Domain-Driven Design
 site_author: AI Assistant
-site_url: https://architecture-and-patterns.github.io/
+site_url: https://daymanking990.github.io/Mastery-of-Architecture-Design-patterns-Solid/
 
 # Указываем папку с файлами документации
 docs_dir: docs
 
-repo_name: architecture-and-patterns
-repo_url: https://github.com/architecture-and-patterns/course
+repo_name: Mastery-of-Architecture-Design-patterns-Solid
+repo_url: https://github.com/DaymaNKinG990/Mastery-of-Architecture-Design-patterns-Solid
 edit_uri: edit/main/
 
 theme:
@@ -140,7 +140,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/architecture-and-patterns/course
+      link: https://github.com/DaymaNKinG990/Mastery-of-Architecture-Design-patterns-Solid
   # Переменные для GitHub Actions workflows
   matrix:
     python-version: "3.12"
