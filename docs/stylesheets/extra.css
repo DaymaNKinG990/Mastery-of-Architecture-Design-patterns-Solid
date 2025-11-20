@@ -100,10 +100,9 @@ h6 .emoji {
   color: var(--md-accent-fg-color) !important;
 }
 
-/* После ухода курсора возвращаем нормальный цвет */
+/* После ухода курсора возвращаем нормальный цвет - используем color вместо opacity */
 .md-nav__link:not(:hover):not(.md-nav__link--active) {
-  color: var(--md-default-fg-color--primary) !important;
-  opacity: 0.7;
+  color: var(--md-default-fg-color--light) !important;
 }
 
 /* Исправление проблемы 3 и 4: эмодзи не должны затемняться */
@@ -114,20 +113,6 @@ h6 .emoji {
 .md-typeset li .emoji,
 .md-typeset td .emoji,
 .md-typeset th .emoji {
-  opacity: 1 !important;
-  filter: none !important;
-  color: inherit !important;
-}
-
-/* Эмодзи в ссылках контента не должны затемняться */
-.md-typeset a .emoji {
-  opacity: 1 !important;
-  filter: none !important;
-  color: inherit !important;
-}
-
-/* Эмодзи в навигации всегда нормальные */
-.md-nav__link .emoji {
   opacity: 1 !important;
   filter: none !important;
   color: inherit !important;
@@ -145,15 +130,13 @@ h6 .emoji {
   color: var(--md-accent-fg-color) !important;
 }
 
-/* После ухода курсора возвращаем нормальный цвет для tabs */
+/* После ухода курсора возвращаем нормальный цвет для tabs - используем color вместо opacity */
 .md-tabs__link:not(:hover):not(.md-tabs__link--active) {
-  color: var(--md-default-fg-color--primary) !important;
-  opacity: 0.7;
+  color: var(--md-default-fg-color--light) !important;
 }
 
 .md-header__inner .md-nav__link:not(:hover):not(.md-nav__link--active) {
-  color: var(--md-default-fg-color--primary) !important;
-  opacity: 0.7;
+  color: var(--md-default-fg-color--light) !important;
 }
 
 /* Эмодзи в верхней навигации */
@@ -166,7 +149,14 @@ h6 .emoji {
 
 /* Глобальное исправление для всех эмодзи - они не должны затемняться нигде */
 .emoji,
-span.emoji,
+span.emoji {
+  opacity: 1 !important;
+  filter: none !important;
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Эмодзи в контенте */
 .md-typeset .emoji,
 .md-typeset h1 .emoji,
 .md-typeset h2 .emoji,
@@ -178,7 +168,14 @@ span.emoji,
 .md-typeset li .emoji,
 .md-typeset td .emoji,
 .md-typeset th .emoji,
-.md-typeset a .emoji,
+.md-typeset a .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Эмодзи в навигации */
 .md-nav__link .emoji,
 .md-tabs__link .emoji {
   opacity: 1 !important;

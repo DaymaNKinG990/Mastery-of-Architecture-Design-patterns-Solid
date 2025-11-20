@@ -1195,29 +1195,14 @@ tbody tr:hover {
     opacity: 1 !important;
     filter: none !important;
     color: inherit !important;
+    fill: currentColor !important;
 }
 
 .md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button):hover .emoji {
     opacity: 1 !important;
     filter: none !important;
     color: inherit !important;
-}
-
-/* Эмодзи везде в контенте не должны затемняться */
-.md-typeset .emoji,
-.md-typeset h1 .emoji,
-.md-typeset h2 .emoji,
-.md-typeset h3 .emoji,
-.md-typeset h4 .emoji,
-.md-typeset h5 .emoji,
-.md-typeset h6 .emoji,
-.md-typeset p .emoji,
-.md-typeset li .emoji,
-.md-typeset td .emoji,
-.md-typeset th .emoji {
-    opacity: 1 !important;
-    filter: none !important;
-    color: inherit !important;
+    fill: currentColor !important;
 }
 
 .md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button)::after {
