@@ -1178,19 +1178,19 @@ tbody tr:hover {
     background: rgba(var(--md-accent-fg-color-rgb), 0.05);
 }
 
-/* Enhanced link styling */
-a {
+/* Enhanced link styling - только для контента, не для навигации */
+.md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button) {
     color: var(--md-accent-fg-color);
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
 }
 
-a:hover {
+.md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button):hover {
     color: var(--md-accent-fg-color--dark);
 }
 
-a::after {
+.md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button)::after {
     content: '';
     position: absolute;
     width: 0;
@@ -1201,7 +1201,7 @@ a::after {
     transition: width 0.3s ease;
 }
 
-a:hover::after {
+.md-typeset a:not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-sidebar__button):hover::after {
     width: 100%;
 }
 

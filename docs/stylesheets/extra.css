@@ -46,6 +46,32 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 
+/* Исправление стилей активных элементов навигации */
+.md-nav__link--active {
+  color: var(--md-primary-fg-color) !important;
+  font-weight: 600;
+}
+
+.md-nav__link--active::before {
+  display: none !important;
+}
+
+/* Убираем красные обводки и подчеркивания для активных элементов */
+.md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color) !important;
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Убираем обводки для заголовков в навигации */
+.md-nav__item--active .md-nav__link {
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
 /* Улучшение отображения inline кода */
 .md-typeset code {
   padding: 0.2em 0.4em;
