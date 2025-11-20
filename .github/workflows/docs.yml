@@ -18,6 +18,8 @@ on:
       - '.github/workflows/docs.yml'
       - 'pyproject.toml'
       - 'main.py'
+  # Ручной запуск workflow
+  workflow_dispatch:
 
 permissions:
   contents: read
