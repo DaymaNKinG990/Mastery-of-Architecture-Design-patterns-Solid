@@ -6,21 +6,35 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Исправление проблемы 4: эмодзи в заголовках не должны затемняться */
+/* Используем высокую специфичность для переопределения стилей Material */
 .md-typeset h1 .emoji,
 .md-typeset h2 .emoji,
 .md-typeset h3 .emoji,
 .md-typeset h4 .emoji,
 .md-typeset h5 .emoji,
 .md-typeset h6 .emoji,
-h1 .emoji,
-h2 .emoji,
-h3 .emoji,
-h4 .emoji,
-h5 .emoji,
-h6 .emoji {
+.md-content h1 .emoji,
+.md-content h2 .emoji,
+.md-content h3 .emoji,
+.md-content h4 .emoji,
+.md-content h5 .emoji,
+.md-content h6 .emoji {
   opacity: 1 !important;
   filter: none !important;
   color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Для SVG внутри эмодзи в заголовках */
+.md-typeset h1 .emoji svg,
+.md-typeset h2 .emoji svg,
+.md-typeset h3 .emoji svg,
+.md-typeset h4 .emoji svg,
+.md-typeset h5 .emoji svg,
+.md-typeset h6 .emoji svg {
+  opacity: 1 !important;
+  filter: none !important;
+  fill: currentColor !important;
 }
 
 /* Стили для блоков кода */
@@ -106,16 +120,19 @@ h6 .emoji {
 }
 
 /* Исправление проблемы 3 и 4: эмодзи не должны затемняться */
+/* Базовые стили для всех эмодзи с высокой специфичностью */
 .md-nav__link .emoji,
 .md-typeset .emoji,
 .md-typeset a .emoji,
 .md-typeset p .emoji,
 .md-typeset li .emoji,
 .md-typeset td .emoji,
-.md-typeset th .emoji {
+.md-typeset th .emoji,
+.md-content .emoji {
   opacity: 1 !important;
   filter: none !important;
   color: inherit !important;
+  fill: currentColor !important;
 }
 
 /* Исправление проблемы 2: стили для верхней навигации (tabs) */
@@ -148,27 +165,26 @@ h6 .emoji {
 }
 
 /* Глобальное исправление для всех эмодзи - они не должны затемняться нигде */
+/* Используем максимальную специфичность для переопределения всех возможных стилей Material */
 .emoji,
-span.emoji {
+span.emoji,
+[class*="emoji"] {
   opacity: 1 !important;
   filter: none !important;
   color: inherit !important;
   fill: currentColor !important;
 }
 
-/* Эмодзи в контенте */
+/* Эмодзи в контенте - более специфичные селекторы */
 .md-typeset .emoji,
-.md-typeset h1 .emoji,
-.md-typeset h2 .emoji,
-.md-typeset h3 .emoji,
-.md-typeset h4 .emoji,
-.md-typeset h5 .emoji,
-.md-typeset h6 .emoji,
 .md-typeset p .emoji,
 .md-typeset li .emoji,
 .md-typeset td .emoji,
 .md-typeset th .emoji,
-.md-typeset a .emoji {
+.md-typeset a .emoji,
+.md-content .emoji,
+.md-content p .emoji,
+.md-content li .emoji {
   opacity: 1 !important;
   filter: none !important;
   color: inherit !important;
@@ -177,19 +193,23 @@ span.emoji {
 
 /* Эмодзи в навигации */
 .md-nav__link .emoji,
-.md-tabs__link .emoji {
+.md-tabs__link .emoji,
+.md-header__inner .md-nav__link .emoji {
   opacity: 1 !important;
   filter: none !important;
   color: inherit !important;
   fill: currentColor !important;
 }
 
-/* Специально для SVG эмодзи (MkDocs Material использует SVG) */
+/* Специально для SVG эмодзи (MkDocs Material использует SVG через twemoji) */
 .emoji svg,
-span.emoji svg {
+span.emoji svg,
+.md-typeset .emoji svg,
+.md-content .emoji svg {
   opacity: 1 !important;
   filter: none !important;
   fill: currentColor !important;
+  color: inherit !important;
 }
 
 /* Улучшение отображения inline кода */
