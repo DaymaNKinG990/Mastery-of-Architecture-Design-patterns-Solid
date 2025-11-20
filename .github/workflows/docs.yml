@@ -3,8 +3,21 @@ name: Build and Deploy Documentation
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+      - 'pyproject.toml'
+      - 'main.py'
+  # Pull requests только для проверки, без деплоя
   pull_request:
     branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+      - 'pyproject.toml'
+      - 'main.py'
 
 permissions:
   contents: read
@@ -13,7 +26,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
