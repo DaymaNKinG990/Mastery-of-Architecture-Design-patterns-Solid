@@ -112,6 +112,9 @@ nav:
     - Поведенческие паттерны 1: curriculum/module-02-patterns/04-behavioral-patterns-1.md
     - Поведенческие паттерны 2: curriculum/module-02-patterns/05-behavioral-patterns-2.md
     - Применение паттернов: curriculum/module-02-patterns/06-patterns-application.md
+    - Паттерны в реальном мире: curriculum/module-02-patterns/07-real-world-patterns.md
+    - Практика паттернов: curriculum/module-02-patterns/08-patterns-practice.md
+    - Рефакторинг с паттернами: curriculum/module-02-patterns/09-patterns-refactoring.md
   - Модуль 3 - Архитектура ПО:
     - Обзор модуля: curriculum/module-03-architecture/README.md
     - Обзор архитектур: curriculum/module-03-architecture/01-architecture-overview.md

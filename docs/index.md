@@ -75,7 +75,7 @@
    uv run docs/exercises/module-01-solid/01-srp-refactoring-solution.py
    ```
 
-5. **Начните с [Модуля 1: Принципы SOLID](curriculum/module-01-solid/README.md)** или сразу переходите к **[Модулю 3: Архитектурные Подходы](curriculum/module-03-architecture/README.md)**
+5. **Начните с [Модуля 1: Принципы SOLID](curriculum/module-01-solid/introduction.md)** или сразу переходите к **[Модулю 3: Архитектурные Подходы](curriculum/module-03-architecture/README.md)**
 
 ## 💡 Ключевые концепции
 
@@ -166,7 +166,7 @@
 
 ### Контакты
 
-- **📧 Email**: support@architecture-patterns-course.com
+- **📧 Email**: xellaopromaster@yandex.ru
 - **📚 Документация**: [GitHub Wiki](https://github.com/architecture-and-patterns/course/wiki)
 - **🐛 Issues**: [GitHub Issues](https://github.com/architecture-and-patterns/course/issues)
 
