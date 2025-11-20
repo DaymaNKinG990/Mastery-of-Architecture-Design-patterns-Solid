@@ -5,6 +5,24 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.3;
 }
 
+/* Исправление проблемы 4: эмодзи в заголовках не должны затемняться */
+.md-typeset h1 .emoji,
+.md-typeset h2 .emoji,
+.md-typeset h3 .emoji,
+.md-typeset h4 .emoji,
+.md-typeset h5 .emoji,
+.md-typeset h6 .emoji,
+h1 .emoji,
+h2 .emoji,
+h3 .emoji,
+h4 .emoji,
+h5 .emoji,
+h6 .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+  color: inherit !important;
+}
+
 /* Стили для блоков кода */
 .highlight pre {
   border-radius: 8px;
@@ -91,21 +109,28 @@ h1, h2, h3, h4, h5, h6 {
 /* Исправление проблемы 3 и 4: эмодзи не должны затемняться */
 .md-nav__link .emoji,
 .md-typeset .emoji,
-.md-typeset a .emoji {
+.md-typeset a .emoji,
+.md-typeset p .emoji,
+.md-typeset li .emoji,
+.md-typeset td .emoji,
+.md-typeset th .emoji {
   opacity: 1 !important;
   filter: none !important;
+  color: inherit !important;
 }
 
 /* Эмодзи в ссылках контента не должны затемняться */
 .md-typeset a .emoji {
   opacity: 1 !important;
   filter: none !important;
+  color: inherit !important;
 }
 
 /* Эмодзи в навигации всегда нормальные */
 .md-nav__link .emoji {
   opacity: 1 !important;
   filter: none !important;
+  color: inherit !important;
 }
 
 /* Исправление проблемы 2: стили для верхней навигации (tabs) */
@@ -136,6 +161,38 @@ h1, h2, h3, h4, h5, h6 {
 .md-header__inner .md-nav__link .emoji {
   opacity: 1 !important;
   filter: none !important;
+  color: inherit !important;
+}
+
+/* Глобальное исправление для всех эмодзи - они не должны затемняться нигде */
+.emoji,
+span.emoji,
+.md-typeset .emoji,
+.md-typeset h1 .emoji,
+.md-typeset h2 .emoji,
+.md-typeset h3 .emoji,
+.md-typeset h4 .emoji,
+.md-typeset h5 .emoji,
+.md-typeset h6 .emoji,
+.md-typeset p .emoji,
+.md-typeset li .emoji,
+.md-typeset td .emoji,
+.md-typeset th .emoji,
+.md-typeset a .emoji,
+.md-nav__link .emoji,
+.md-tabs__link .emoji {
+  opacity: 1 !important;
+  filter: none !important;
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* Специально для SVG эмодзи (MkDocs Material использует SVG) */
+.emoji svg,
+span.emoji svg {
+  opacity: 1 !important;
+  filter: none !important;
+  fill: currentColor !important;
 }
 
 /* Улучшение отображения inline кода */
