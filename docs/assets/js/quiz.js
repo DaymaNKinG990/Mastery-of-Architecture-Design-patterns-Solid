@@ -471,8 +471,13 @@ function initQuizFromData(containerId) {
 
 // Auto-initialize all quizzes on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const quizContainers = document.querySelectorAll('.quiz-container[id]');
-    quizContainers.forEach(container => {
+    const quizContainers = document.querySelectorAll('.quiz-container');
+    quizContainers.forEach((container, index) => {
+        // If container doesn't have an id, generate one
+        if (!container.id) {
+            container.id = `quiz-container-${index}-${Date.now()}`;
+        }
+        
         if (container.querySelector('script[type="application/json"]')) {
             initQuizFromData(container.id);
         }
