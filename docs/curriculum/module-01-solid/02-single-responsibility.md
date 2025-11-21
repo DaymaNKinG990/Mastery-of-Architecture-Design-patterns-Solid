@@ -484,24 +484,15 @@ class UserService:
     use_pyodide=True,
     test_cases=[
         {
-            "code": """
-# Test 1: Проверка что UserValidator существует
-assert 'UserValidator' in globals(), "Создайте класс UserValidator"
-            """,
+            "code": "assert 'UserValidator' in globals(), 'Создайте класс UserValidator'",
             "description": "Класс UserValidator должен существовать"
         },
         {
-            "code": """
-# Test 2: Проверка что UserRepository существует
-assert 'UserRepository' in globals(), "Создайте класс UserRepository"
-            """,
+            "code": "assert 'UserRepository' in globals(), 'Создайте класс UserRepository'",
             "description": "Класс UserRepository должен существовать"
         },
         {
-            "code": """
-# Test 3: Проверка что EmailService существует
-assert 'EmailService' in globals(), "Создайте класс EmailService"
-            """,
+            "code": "assert 'EmailService' in globals(), 'Создайте класс EmailService'",
             "description": "Класс EmailService должен существовать"
         }
     ]
