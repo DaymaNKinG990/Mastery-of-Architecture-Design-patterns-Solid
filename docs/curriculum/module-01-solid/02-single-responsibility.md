@@ -389,11 +389,24 @@ user_service = UserService(
 
 ### Упражнение 1: Рефакторинг UserService
 
-Разделите класс `UserService` на отдельные классы с единственной ответственностью:
+**Задача:** Класс `UserService` нарушает принцип единственной ответственности, так как выполняет валидацию, работу с базой данных и отправку email. Необходимо провести рефакторинг.
+
+**Что нужно сделать:**
+
+1. Проанализируйте исходный класс и определите все его ответственности
+2. Создайте отдельные протоколы для каждой ответственности
+3. Реализуйте конкретные классы для каждого протокола
+4. Перепишите `UserService` как координатор, который использует созданные сервисы через dependency injection
+
+**Требования к решению:**
+
+- Использовать `Protocol` для определения интерфейсов
+- Каждый класс должен иметь одну четко определенную ответственность
+- `UserService` должен принимать зависимости через конструктор
 
 {{ code_input_form(
     exercise_id="srp_refactoring_01",
-    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    email: str\n    password: str\n\n# ЗАДАНИЕ: Разделите этот класс на несколько с единственной ответственностью\nclass UserService:\n    def create_user(self, user_data):\n        # 1. Валидация данных\n        if not self._validate_data(user_data):\n            raise ValueError(\"Invalid data\")\n        \n        # 2. Создание пользователя\n        user = User(**user_data)\n        \n        # 3. Сохранение в БД\n        self._save_to_db(user)\n        \n        # 4. Отправка email\n        self._send_welcome_email(user)\n        \n        return user\n    \n    def _validate_data(self, data): pass\n    def _save_to_db(self, user): pass  \n    def _send_welcome_email(self, user): pass\n\n# TODO: Создайте отдельные классы:\n# 1. UserValidator(Protocol) - валидация\n# 2. UserRepository(Protocol) - сохранение \n# 3. EmailService(Protocol) - уведомления\n# 4. UserService - только бизнес-логика (координатор)\n\n# Ваш код здесь:\n",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    email: str\n    password: str\n\n# Исходный класс с нарушением SRP:\nclass UserService:\n    def create_user(self, user_data):\n        # 1. Валидация данных\n        if not self._validate_data(user_data):\n            raise ValueError(\"Invalid data\")\n        \n        # 2. Создание пользователя\n        user = User(**user_data)\n        \n        # 3. Сохранение в БД\n        self._save_to_db(user)\n        \n        # 4. Отправка email\n        self._send_welcome_email(user)\n        \n        return user\n    \n    def _validate_data(self, data): pass\n    def _save_to_db(self, user): pass  \n    def _send_welcome_email(self, user): pass\n\n# Ваш код здесь:\n",
     placeholder="Создайте классы с единственной ответственностью...",
     use_pyodide=True,
     test_cases=[
@@ -416,16 +429,30 @@ user_service = UserService(
     ]
 ) }}
 
-!!! tip "Подсказка для упражнения 1"
+??? tip "Подсказка"
     Используйте Protocol для создания интерфейсов, а затем реализуйте конкретные классы. UserService должен принимать эти зависимости через конструктор (Dependency Injection).
 
 ### Упражнение 2: Рефакторинг OrderProcessor
 
-Проанализируйте класс `OrderProcessor` и разделите его на отдельные ответственности:
+**Задача:** Метод `process_order` выполняет слишком много разнородных операций: работает с базой данных, обрабатывает платежи, управляет складом и отправляет уведомления. Это классический пример нарушения SRP.
+
+**Что нужно сделать:**
+
+1. Определите все ответственности класса `OrderProcessor`
+2. Создайте отдельный протокол для каждой операции
+3. Реализуйте конкретные классы для каждого протокола
+4. Реорганизуйте `OrderProcessor` как координирующий класс
+
+**Требования к решению:**
+
+- Минимум 5 отдельных классов ответственности
+- Использование Protocol для определения контрактов
+- OrderProcessor координирует работу всех сервисов
+- Каждый класс отвечает только за одну область
 
 {{ code_input_form(
     exercise_id="srp_order_processor",
-    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass Order:\n    order_id: str\n    amount: float\n    customer_email: str\n\n# TODO: Разделите OrderProcessor на отдельные классы:\n# 1. OrderValidator - валидация заказа\n# 2. OrderRepository - сохранение в БД\n# 3. PaymentProcessor - обработка платежа\n# 4. EmailNotifier - отправка email\n# 5. InventoryManager - обновление склада\n# 6. OrderProcessor - координатор всех операций\n\n# Исходный код с нарушением SRP:\nclass OrderProcessor:\n    def process_order(self, order_data):\n        # Валидация заказа\n        # Сохранение в БД  \n        # Обработка платежа\n        # Отправка email\n        # Обновление склада\n        pass\n\n# Ваш рефакторинг здесь:\n",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass Order:\n    order_id: str\n    amount: float\n    customer_email: str\n\n# Исходный класс с нарушением SRP:\nclass OrderProcessor:\n    def process_order(self, order_data):\n        # Валидация заказа\n        # Сохранение в БД  \n        # Обработка платежа\n        # Отправка email\n        # Обновление склада\n        pass\n\n# Ваш рефакторинг здесь:\n",
     placeholder="Создайте отдельные классы для каждой ответственности...",
     use_pyodide=True,
     test_cases=[
@@ -452,16 +479,30 @@ user_service = UserService(
     ]
 ) }}
 
-!!! tip "Подсказка для упражнения 2"
-    Класс имеет **5 ответственностей** (посчитайте комментарии). Создайте отдельный класс для каждой ответственности, используя Protocol для интерфейсов. OrderProcessor должен стать координатором, принимающим все зависимости через конструктор.
+??? tip "Подсказка"
+    Посчитайте комментарии в методе `process_order` - каждый комментарий указывает на отдельную ответственность. Создайте Protocol и реализацию для каждой из них.
 
 ### Упражнение 3: Рефакторинг FileManager
 
-Разделите `FileManager` на специализированные классы:
+**Задача:** Класс `FileManager` объединяет операции ввода-вывода, сжатия, шифрования и работы с облаком. Каждая из этих операций является отдельной ответственностью и должна быть выделена.
+
+**Что нужно сделать:**
+
+1. Выделите каждый метод `FileManager` в отдельную область ответственности
+2. Создайте протоколы для каждого типа операций с файлами
+3. Реализуйте конкретные классы для каждого протокола
+4. Создайте новый FileManager, который использует композицию этих сервисов
+
+**Требования к решению:**
+
+- Отдельные протоколы для чтения, записи, сжатия, шифрования и загрузки
+- Конкретные реализации для каждого протокола
+- FileManager как фасад, делегирующий операции специализированным классам
+- Возможность легко заменять реализации (например, разные алгоритмы сжатия)
 
 {{ code_input_form(
     exercise_id="srp_file_manager",
-    initial_code="from typing import Protocol\n\n# TODO: Создайте протоколы и реализации:\n# 1. FileReader(Protocol) - чтение файлов\n# 2. FileWriter(Protocol) - запись файлов\n# 3. FileCompressor(Protocol) - сжатие файлов\n# 4. FileEncryptor(Protocol) - шифрование файлов\n# 5. CloudUploader(Protocol) - загрузка в облако\n# 6. FileManager - координатор операций\n\n# Исходный код с нарушением SRP:\nclass FileManager:\n    def read_file(self, filename): pass\n    def write_file(self, filename, content): pass  \n    def compress_file(self, filename): pass\n    def encrypt_file(self, filename, key): pass\n    def upload_to_cloud(self, filename): pass\n\n# Ваш рефакторинг здесь:\n",
+    initial_code="from typing import Protocol\n\n# Исходный класс с нарушением SRP:\nclass FileManager:\n    def read_file(self, filename): pass\n    def write_file(self, filename, content): pass  \n    def compress_file(self, filename): pass\n    def encrypt_file(self, filename, key): pass\n    def upload_to_cloud(self, filename): pass\n\n# Ваш рефакторинг здесь:\n",
     placeholder="Создайте протоколы и конкретные реализации...",
     use_pyodide=True,
     test_cases=[
@@ -488,16 +529,31 @@ user_service = UserService(
     ]
 ) }}
 
-!!! tip "Подсказка для упражнения 3"
-    Создайте **5 протоколов** для разных операций с файлами. Каждый протокол должен иметь один основной метод. Затем создайте конкретные реализации (например, `LocalFileReader`, `GZipCompressor`). FileManager координирует все операции через эти интерфейсы.
+??? tip "Подсказка"
+    Каждый метод исходного класса должен превратиться в отдельный протокол. Например: `read_file` → `FileReader(Protocol)` → `LocalFileReader`. FileManager должен принимать все эти сервисы и делегировать им вызовы.
 
 ### Упражнение 4: Система интернет-магазина
 
-Создайте архитектуру e-commerce системы с разделением ответственностей:
+**Задача:** Спроектируйте архитектуру e-commerce системы с нуля, применяя принцип единственной ответственности. Система должна управлять товарами, заказами, платежами и уведомлениями.
+
+**Что нужно сделать:**
+
+1. Выделите 4 основных бизнес-домена интернет-магазина
+2. Создайте протокол для каждого бизнес-домена
+3. Реализуйте конкретные классы (минимум 2 реализации для платежей и уведомлений)
+4. Создайте координирующий класс ECommerceSystem, объединяющий все сервисы
+5. Реализуйте метод оформления заказа, использующий все сервисы
+
+**Требования к решению:**
+
+- 4 протокола для разных доменов (товары, заказы, платежи, уведомления)
+- Минимум 6 конкретных реализаций (по 1 для товаров и заказов, по 2 для платежей и уведомлений)
+- ECommerceSystem координирует работу всех сервисов через dependency injection
+- Продемонстрируйте гибкость: легкую замену реализаций (например, Stripe на PayPal)
 
 {{ code_input_form(
     exercise_id="srp_ecommerce_system",
-    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\nfrom decimal import Decimal\n\n@dataclass\nclass Product:\n    product_id: str\n    name: str\n    price: Decimal\n    stock: int\n\n@dataclass\nclass Order:\n    order_id: str\n    product_id: str\n    quantity: int\n    total: Decimal\n\n# TODO: Создайте 4 бизнес-домена:\n# 1. ProductService(Protocol) - управление товарами\n#    → Реализация: ProductCatalog\n# 2. OrderService(Protocol) - обработка заказов\n#    → Реализация: OrderManager\n# 3. PaymentService(Protocol) - обработка платежей\n#    → Реализации: StripePaymentProcessor, PayPalProcessor\n# 4. NotificationService(Protocol) - уведомления\n#    → Реализации: SMTPEmailService, SlackNotifier\n# 5. ECommerceSystem - координатор всех сервисов\n\n# Ваш код здесь:\n",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\nfrom decimal import Decimal\n\n@dataclass\nclass Product:\n    product_id: str\n    name: str\n    price: Decimal\n    stock: int\n\n@dataclass\nclass Order:\n    order_id: str\n    product_id: str\n    quantity: int\n    total: Decimal\n\n# Ваш код здесь:\n",
     placeholder="Создайте сервисы для e-commerce системы...",
     use_pyodide=True,
     test_cases=[
@@ -524,5 +580,5 @@ user_service = UserService(
     ]
 ) }}
 
-!!! tip "Подсказка для упражнения 4"
-    Создайте **4 протокола** для бизнес-доменов. Для каждого протокола создайте минимум одну реализацию (для PaymentService и NotificationService - по две). ECommerceSystem должен принимать все сервисы через конструктор и координировать их работу. Например: `create_order()` использует ProductService → OrderService → PaymentService → NotificationService.
+??? tip "Подсказка"
+    Типичные операции: ProductService (получить товар, проверить наличие), OrderService (создать заказ), PaymentService (обработать платеж), NotificationService (отправить уведомление). Для платежей и уведомлений создайте альтернативные реализации.
