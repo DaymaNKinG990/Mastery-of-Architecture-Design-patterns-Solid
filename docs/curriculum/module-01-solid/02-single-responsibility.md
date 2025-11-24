@@ -391,6 +391,31 @@ user_service = UserService(
 
 **Задача:** Класс `UserService` нарушает принцип единственной ответственности, так как выполняет валидацию, работу с базой данных и отправку email. Необходимо провести рефакторинг.
 
+**Исходный код с проблемой:**
+
+```python
+class UserService:
+    def create_user(self, user_data):
+        # 1. Валидация данных
+        if not self._validate_data(user_data):
+            raise ValueError("Invalid data")
+        
+        # 2. Создание пользователя
+        user = User(**user_data)
+        
+        # 3. Сохранение в БД
+        self._save_to_db(user)
+        
+        # 4. Отправка email
+        self._send_welcome_email(user)
+        
+        return user
+    
+    def _validate_data(self, data): pass
+    def _save_to_db(self, user): pass  
+    def _send_welcome_email(self, user): pass
+```
+
 **Что нужно сделать:**
 
 1. Проанализируйте исходный класс и определите все его ответственности
@@ -406,25 +431,45 @@ user_service = UserService(
 
 {{ code_input_form(
     exercise_id="srp_refactoring_01",
-    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    email: str\n    password: str\n\n# Исходный класс с нарушением SRP:\nclass UserService:\n    def create_user(self, user_data):\n        # 1. Валидация данных\n        if not self._validate_data(user_data):\n            raise ValueError(\"Invalid data\")\n        \n        # 2. Создание пользователя\n        user = User(**user_data)\n        \n        # 3. Сохранение в БД\n        self._save_to_db(user)\n        \n        # 4. Отправка email\n        self._send_welcome_email(user)\n        \n        return user\n    \n    def _validate_data(self, data): pass\n    def _save_to_db(self, user): pass  \n    def _send_welcome_email(self, user): pass\n\n# Ваш код здесь:\n",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    email: str\n    password: str\n\n# Ваш код здесь:\n",
     placeholder="Создайте классы с единственной ответственностью...",
     use_pyodide=True,
     test_cases=[
         {
-            "code": "assert 'UserValidator' in globals(), 'Создайте класс UserValidator'",
-            "description": "Класс UserValidator должен существовать"
+            "code": "assert 'UserValidator' in globals(), '❌ Не найден класс UserValidator. Создайте протокол для валидации данных пользователя.'",
+            "description": "Проверка существования UserValidator"
         },
         {
-            "code": "assert 'UserRepository' in globals(), 'Создайте класс UserRepository'",
-            "description": "Класс UserRepository должен существовать"
+            "code": "assert 'UserRepository' in globals(), '❌ Не найден класс UserRepository. Создайте протокол для работы с базой данных.'",
+            "description": "Проверка существования UserRepository"
         },
         {
-            "code": "assert 'EmailService' in globals(), 'Создайте класс EmailService'",
-            "description": "Класс EmailService должен существовать"
+            "code": "assert 'EmailService' in globals(), '❌ Не найден класс EmailService. Создайте протокол для отправки email уведомлений.'",
+            "description": "Проверка существования EmailService"
         },
         {
-            "code": "validator = UserValidator if not isinstance(UserValidator, type(Protocol)) else None; assert validator is None or hasattr(validator, 'validate'), 'UserValidator должен иметь метод validate'",
-            "description": "UserValidator должен иметь метод validate"
+            "code": "import inspect; assert 'UserValidator' in globals() and (inspect.isclass(UserValidator) and hasattr(UserValidator, 'validate')), '❌ UserValidator должен иметь метод validate для проверки данных.'",
+            "description": "Проверка метода validate в UserValidator"
+        },
+        {
+            "code": "import inspect; assert 'UserRepository' in globals() and (inspect.isclass(UserRepository) and hasattr(UserRepository, 'save')), '❌ UserRepository должен иметь метод save для сохранения пользователей в БД.'",
+            "description": "Проверка метода save в UserRepository"
+        },
+        {
+            "code": "import inspect; assert 'EmailService' in globals() and (inspect.isclass(EmailService) and hasattr(EmailService, 'send')), '❌ EmailService должен иметь метод send для отправки email.'",
+            "description": "Проверка метода send в EmailService"
+        },
+        {
+            "code": "assert 'UserService' in globals(), '❌ Не найден класс UserService. Создайте координатор, который использует все сервисы.'",
+            "description": "Проверка существования координатора UserService"
+        },
+        {
+            "code": "import inspect; service = UserService if 'UserService' in globals() else None; assert service and hasattr(service, '__init__'), '❌ UserService должен иметь конструктор для принятия зависимостей.'",
+            "description": "Проверка конструктора UserService"
+        },
+        {
+            "code": "import inspect; service = UserService if 'UserService' in globals() else None; sig = inspect.signature(service.__init__) if service else None; assert sig and len(sig.parameters) >= 3, '❌ UserService должен принимать минимум 3 зависимости через конструктор (validator, repository, email_service).'",
+            "description": "Проверка параметров конструктора"
         }
     ]
 ) }}
@@ -436,9 +481,22 @@ user_service = UserService(
 
 **Задача:** Метод `process_order` выполняет слишком много разнородных операций: работает с базой данных, обрабатывает платежи, управляет складом и отправляет уведомления. Это классический пример нарушения SRP.
 
+**Исходный код с проблемой:**
+
+```python
+class OrderProcessor:
+    def process_order(self, order_data):
+        # Валидация заказа
+        # Сохранение в БД  
+        # Обработка платежа
+        # Отправка email
+        # Обновление склада
+        pass
+```
+
 **Что нужно сделать:**
 
-1. Определите все ответственности класса `OrderProcessor`
+1. Определите все ответственности класса `OrderProcessor` (посчитайте комментарии)
 2. Создайте отдельный протокол для каждой операции
 3. Реализуйте конкретные классы для каждого протокола
 4. Реорганизуйте `OrderProcessor` как координирующий класс
@@ -452,29 +510,57 @@ user_service = UserService(
 
 {{ code_input_form(
     exercise_id="srp_order_processor",
-    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass Order:\n    order_id: str\n    amount: float\n    customer_email: str\n\n# Исходный класс с нарушением SRP:\nclass OrderProcessor:\n    def process_order(self, order_data):\n        # Валидация заказа\n        # Сохранение в БД  \n        # Обработка платежа\n        # Отправка email\n        # Обновление склада\n        pass\n\n# Ваш рефакторинг здесь:\n",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass Order:\n    order_id: str\n    amount: float\n    customer_email: str\n\n# Ваш рефакторинг здесь:\n",
     placeholder="Создайте отдельные классы для каждой ответственности...",
     use_pyodide=True,
     test_cases=[
         {
-            "code": "assert 'OrderValidator' in globals(), 'Создайте класс OrderValidator'",
-            "description": "Класс OrderValidator должен существовать"
+            "code": "assert 'OrderValidator' in globals(), '❌ Не найден класс OrderValidator. Создайте протокол для валидации заказов.'",
+            "description": "Проверка существования OrderValidator"
         },
         {
-            "code": "assert 'OrderRepository' in globals(), 'Создайте класс OrderRepository'",
-            "description": "Класс OrderRepository должен существовать"
+            "code": "assert 'OrderRepository' in globals(), '❌ Не найден класс OrderRepository. Создайте протокол для сохранения заказов в БД.'",
+            "description": "Проверка существования OrderRepository"
         },
         {
-            "code": "assert 'PaymentProcessor' in globals(), 'Создайте класс PaymentProcessor'",
-            "description": "Класс PaymentProcessor должен существовать"
+            "code": "assert 'PaymentProcessor' in globals(), '❌ Не найден класс PaymentProcessor. Создайте протокол для обработки платежей.'",
+            "description": "Проверка существования PaymentProcessor"
         },
         {
-            "code": "assert 'EmailNotifier' in globals(), 'Создайте класс EmailNotifier'",
-            "description": "Класс EmailNotifier должен существовать"
+            "code": "assert 'EmailNotifier' in globals(), '❌ Не найден класс EmailNotifier. Создайте протокол для отправки email уведомлений.'",
+            "description": "Проверка существования EmailNotifier"
         },
         {
-            "code": "assert 'InventoryManager' in globals(), 'Создайте класс InventoryManager'",
-            "description": "Класс InventoryManager должен существовать"
+            "code": "assert 'InventoryManager' in globals(), '❌ Не найден класс InventoryManager. Создайте протокол для управления складом.'",
+            "description": "Проверка существования InventoryManager"
+        },
+        {
+            "code": "import inspect; assert 'OrderValidator' in globals() and hasattr(OrderValidator, 'validate'), '❌ OrderValidator должен иметь метод validate для проверки заказов.'",
+            "description": "Проверка метода validate"
+        },
+        {
+            "code": "import inspect; assert 'OrderRepository' in globals() and hasattr(OrderRepository, 'save'), '❌ OrderRepository должен иметь метод save для сохранения заказов.'",
+            "description": "Проверка метода save"
+        },
+        {
+            "code": "import inspect; assert 'PaymentProcessor' in globals() and hasattr(PaymentProcessor, 'process_payment'), '❌ PaymentProcessor должен иметь метод process_payment для обработки платежей.'",
+            "description": "Проверка метода process_payment"
+        },
+        {
+            "code": "import inspect; assert 'EmailNotifier' in globals() and hasattr(EmailNotifier, 'send_notification'), '❌ EmailNotifier должен иметь метод send_notification для отправки уведомлений.'",
+            "description": "Проверка метода send_notification"
+        },
+        {
+            "code": "import inspect; assert 'InventoryManager' in globals() and hasattr(InventoryManager, 'update_stock'), '❌ InventoryManager должен иметь метод update_stock для обновления склада.'",
+            "description": "Проверка метода update_stock"
+        },
+        {
+            "code": "assert 'OrderProcessor' in globals(), '❌ Не найден класс OrderProcessor. Создайте координатор для оркестрации всех сервисов.'",
+            "description": "Проверка существования координатора"
+        },
+        {
+            "code": "import inspect; service = OrderProcessor if 'OrderProcessor' in globals() else None; sig = inspect.signature(service.__init__) if service and hasattr(service, '__init__') else None; assert sig and len(sig.parameters) >= 5, '❌ OrderProcessor должен принимать минимум 5 зависимостей через конструктор.'",
+            "description": "Проверка dependency injection"
         }
     ]
 ) }}
@@ -485,6 +571,17 @@ user_service = UserService(
 ### Упражнение 3: Рефакторинг FileManager
 
 **Задача:** Класс `FileManager` объединяет операции ввода-вывода, сжатия, шифрования и работы с облаком. Каждая из этих операций является отдельной ответственностью и должна быть выделена.
+
+**Исходный код с проблемой:**
+
+```python
+class FileManager:
+    def read_file(self, filename): pass
+    def write_file(self, filename, content): pass  
+    def compress_file(self, filename): pass
+    def encrypt_file(self, filename, key): pass
+    def upload_to_cloud(self, filename): pass
+```
 
 **Что нужно сделать:**
 
@@ -502,29 +599,57 @@ user_service = UserService(
 
 {{ code_input_form(
     exercise_id="srp_file_manager",
-    initial_code="from typing import Protocol\n\n# Исходный класс с нарушением SRP:\nclass FileManager:\n    def read_file(self, filename): pass\n    def write_file(self, filename, content): pass  \n    def compress_file(self, filename): pass\n    def encrypt_file(self, filename, key): pass\n    def upload_to_cloud(self, filename): pass\n\n# Ваш рефакторинг здесь:\n",
+    initial_code="from typing import Protocol\n\n# Ваш рефакторинг здесь:\n",
     placeholder="Создайте протоколы и конкретные реализации...",
     use_pyodide=True,
     test_cases=[
         {
-            "code": "assert 'FileReader' in globals(), 'Создайте протокол FileReader'",
-            "description": "Протокол FileReader должен существовать"
+            "code": "assert 'FileReader' in globals(), '❌ Не найден класс FileReader. Создайте протокол для чтения файлов.'",
+            "description": "Проверка существования FileReader"
         },
         {
-            "code": "assert 'FileWriter' in globals(), 'Создайте протокол FileWriter'",
-            "description": "Протокол FileWriter должен существовать"
+            "code": "assert 'FileWriter' in globals(), '❌ Не найден класс FileWriter. Создайте протокол для записи файлов.'",
+            "description": "Проверка существования FileWriter"
         },
         {
-            "code": "assert 'FileCompressor' in globals(), 'Создайте протокол FileCompressor'",
-            "description": "Протокол FileCompressor должен существовать"
+            "code": "assert 'FileCompressor' in globals(), '❌ Не найден класс FileCompressor. Создайте протокол для сжатия файлов.'",
+            "description": "Проверка существования FileCompressor"
         },
         {
-            "code": "assert 'FileEncryptor' in globals(), 'Создайте протокол FileEncryptor'",
-            "description": "Протокол FileEncryptor должен существовать"
+            "code": "assert 'FileEncryptor' in globals(), '❌ Не найден класс FileEncryptor. Создайте протокол для шифрования файлов.'",
+            "description": "Проверка существования FileEncryptor"
         },
         {
-            "code": "assert 'CloudUploader' in globals(), 'Создайте протокол CloudUploader'",
-            "description": "Протокол CloudUploader должен существовать"
+            "code": "assert 'CloudUploader' in globals(), '❌ Не найден класс CloudUploader. Создайте протокол для загрузки в облако.'",
+            "description": "Проверка существования CloudUploader"
+        },
+        {
+            "code": "import inspect; assert 'FileReader' in globals() and hasattr(FileReader, 'read'), '❌ FileReader должен иметь метод read для чтения файлов.'",
+            "description": "Проверка метода read"
+        },
+        {
+            "code": "import inspect; assert 'FileWriter' in globals() and hasattr(FileWriter, 'write'), '❌ FileWriter должен иметь метод write для записи файлов.'",
+            "description": "Проверка метода write"
+        },
+        {
+            "code": "import inspect; assert 'FileCompressor' in globals() and hasattr(FileCompressor, 'compress'), '❌ FileCompressor должен иметь метод compress для сжатия файлов.'",
+            "description": "Проверка метода compress"
+        },
+        {
+            "code": "import inspect; assert 'FileEncryptor' in globals() and hasattr(FileEncryptor, 'encrypt'), '❌ FileEncryptor должен иметь метод encrypt для шифрования файлов.'",
+            "description": "Проверка метода encrypt"
+        },
+        {
+            "code": "import inspect; assert 'CloudUploader' in globals() and hasattr(CloudUploader, 'upload'), '❌ CloudUploader должен иметь метод upload для загрузки в облако.'",
+            "description": "Проверка метода upload"
+        },
+        {
+            "code": "assert 'FileManager' in globals(), '❌ Не найден класс FileManager. Создайте координатор, который использует все файловые сервисы.'",
+            "description": "Проверка существования координатора"
+        },
+        {
+            "code": "import inspect; manager = FileManager if 'FileManager' in globals() else None; sig = inspect.signature(manager.__init__) if manager and hasattr(manager, '__init__') else None; assert sig and len(sig.parameters) >= 5, '❌ FileManager должен принимать минимум 5 зависимостей (reader, writer, compressor, encryptor, uploader) через конструктор.'",
+            "description": "Проверка dependency injection в FileManager"
         }
     ]
 ) }}
@@ -535,6 +660,24 @@ user_service = UserService(
 ### Упражнение 4: Система интернет-магазина
 
 **Задача:** Спроектируйте архитектуру e-commerce системы с нуля, применяя принцип единственной ответственности. Система должна управлять товарами, заказами, платежами и уведомлениями.
+
+**Доменная модель:**
+
+```python
+@dataclass
+class Product:
+    product_id: str
+    name: str
+    price: Decimal
+    stock: int
+
+@dataclass
+class Order:
+    order_id: str
+    product_id: str
+    quantity: int
+    total: Decimal
+```
 
 **Что нужно сделать:**
 
@@ -558,24 +701,56 @@ user_service = UserService(
     use_pyodide=True,
     test_cases=[
         {
-            "code": "assert 'ProductService' in globals(), 'Создайте протокол ProductService'",
-            "description": "Протокол ProductService должен существовать"
+            "code": "assert 'ProductService' in globals(), '❌ Не найден протокол ProductService. Создайте протокол для управления товарами.'",
+            "description": "Проверка существования ProductService"
         },
         {
-            "code": "assert 'OrderService' in globals(), 'Создайте протокол OrderService'",
-            "description": "Протокол OrderService должен существовать"
+            "code": "assert 'OrderService' in globals(), '❌ Не найден протокол OrderService. Создайте протокол для обработки заказов.'",
+            "description": "Проверка существования OrderService"
         },
         {
-            "code": "assert 'PaymentService' in globals(), 'Создайте протокол PaymentService'",
-            "description": "Протокол PaymentService должен существовать"
+            "code": "assert 'PaymentService' in globals(), '❌ Не найден протокол PaymentService. Создайте протокол для обработки платежей.'",
+            "description": "Проверка существования PaymentService"
         },
         {
-            "code": "assert 'NotificationService' in globals(), 'Создайте протокол NotificationService'",
-            "description": "Протокол NotificationService должен существовать"
+            "code": "assert 'NotificationService' in globals(), '❌ Не найден протокол NotificationService. Создайте протокол для отправки уведомлений.'",
+            "description": "Проверка существования NotificationService"
         },
         {
-            "code": "assert 'ECommerceSystem' in globals(), 'Создайте класс-координатор ECommerceSystem'",
-            "description": "Класс ECommerceSystem должен существовать"
+            "code": "import inspect; assert 'ProductService' in globals() and hasattr(ProductService, 'get_product'), '❌ ProductService должен иметь метод get_product для получения информации о товаре.'",
+            "description": "Проверка метода get_product"
+        },
+        {
+            "code": "import inspect; assert 'OrderService' in globals() and hasattr(OrderService, 'create_order'), '❌ OrderService должен иметь метод create_order для создания заказа.'",
+            "description": "Проверка метода create_order"
+        },
+        {
+            "code": "import inspect; assert 'PaymentService' in globals() and hasattr(PaymentService, 'process_payment'), '❌ PaymentService должен иметь метод process_payment для обработки платежей.'",
+            "description": "Проверка метода process_payment"
+        },
+        {
+            "code": "import inspect; assert 'NotificationService' in globals() and hasattr(NotificationService, 'send_notification'), '❌ NotificationService должен иметь метод send_notification для отправки уведомлений.'",
+            "description": "Проверка метода send_notification"
+        },
+        {
+            "code": "payment_implementations = [name for name in globals() if 'Payment' in name and name != 'PaymentService' and inspect.isclass(globals()[name])]; assert len(payment_implementations) >= 2, f'❌ Создайте минимум 2 реализации PaymentService (например, StripePaymentProcessor, PayPalProcessor). Найдено: {len(payment_implementations)}'",
+            "description": "Проверка множественных реализаций для платежей"
+        },
+        {
+            "code": "notification_implementations = [name for name in globals() if 'Notification' in name or 'Notifier' in name or 'Email' in name or 'Slack' in name and name != 'NotificationService' and inspect.isclass(globals()[name])]; assert len(notification_implementations) >= 2, f'❌ Создайте минимум 2 реализации NotificationService (например, EmailNotifier, SlackNotifier). Найдено: {len(notification_implementations)}'",
+            "description": "Проверка множественных реализаций для уведомлений"
+        },
+        {
+            "code": "assert 'ECommerceSystem' in globals(), '❌ Не найден класс ECommerceSystem. Создайте координатор для оркестрации всех сервисов.'",
+            "description": "Проверка существования координатора"
+        },
+        {
+            "code": "import inspect; system = ECommerceSystem if 'ECommerceSystem' in globals() else None; sig = inspect.signature(system.__init__) if system and hasattr(system, '__init__') else None; assert sig and len(sig.parameters) >= 4, '❌ ECommerceSystem должен принимать минимум 4 зависимости (product_service, order_service, payment_service, notification_service) через конструктор.'",
+            "description": "Проверка dependency injection в ECommerceSystem"
+        },
+        {
+            "code": "import inspect; system = ECommerceSystem if 'ECommerceSystem' in globals() else None; assert system and (hasattr(system, 'place_order') or hasattr(system, 'create_order') or hasattr(system, 'process_order')), '❌ ECommerceSystem должен иметь метод для оформления заказа (place_order, create_order или process_order).'",
+            "description": "Проверка метода оформления заказа"
         }
     ]
 ) }}
