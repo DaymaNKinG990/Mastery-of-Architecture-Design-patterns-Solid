@@ -9,11 +9,14 @@
     font-family: 'Fira Code', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     line-height: 1.6;
-    height: auto;
-    min-height: 200px;
+    height: 400px;  /* Fixed height for scrolling */
+    min-height: 300px;
     max-height: 600px;
     background: #272822;
     color: #f8f8f2;
+    overflow: auto;  /* Enable scrolling */
+    position: relative;
+    z-index: 1;
 }
 
 /* Dark theme adjustments */
@@ -78,7 +81,22 @@
     border-right: 1px solid #ccc;
 }
 
-/* Scrollbar styling */
+/* Scrollbar and scroll container */
+.CodeMirror-scroll {
+    overflow: auto !important;
+    margin-bottom: -30px;
+    margin-right: -30px;
+    padding-bottom: 30px;
+    height: 100%;
+    outline: none;
+    position: relative;
+}
+
+.CodeMirror-sizer {
+    position: relative;
+    border-right: 30px solid transparent;
+}
+
 .CodeMirror-scrollbar-filler,
 .CodeMirror-gutter-filler {
     background-color: #272822;
@@ -87,6 +105,21 @@
 [data-md-color-scheme="default"] .CodeMirror-scrollbar-filler,
 [data-md-color-scheme="default"] .CodeMirror-gutter-filler {
     background-color: #f5f5f5;
+}
+
+/* Ensure text selection works */
+.CodeMirror-line {
+    user-select: text;
+    -moz-user-select: text;
+    -webkit-user-select: text;
+    -ms-user-select: text;
+}
+
+.CodeMirror pre {
+    user-select: text;
+    -moz-user-select: text;
+    -webkit-user-select: text;
+    -ms-user-select: text;
 }
 
 /* Focus state */

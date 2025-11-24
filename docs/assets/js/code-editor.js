@@ -36,6 +36,11 @@ function initCodeEditor(textareaId, options = {}) {
         autoCloseBrackets: true,
         matchBrackets: true,
         styleActiveLine: true,
+        readOnly: false,  // Ensure editor is editable
+        dragDrop: true,   // Enable drag and drop
+        cursorBlinkRate: 530,  // Cursor blink rate
+        cursorHeight: 1,  // Full height cursor
+        showCursorWhenSelecting: true,  // Show cursor during selection
         extraKeys: {
             // Handle Tab key for indentation
             'Tab': (cm) => {
@@ -48,6 +53,24 @@ function initCodeEditor(textareaId, options = {}) {
             // Handle Shift-Tab for unindent
             'Shift-Tab': (cm) => {
                 cm.indentSelection('subtract');
+            },
+            // Ctrl/Cmd + A to select all
+            'Ctrl-A': (cm) => {
+                cm.execCommand('selectAll');
+            },
+            'Cmd-A': (cm) => {
+                cm.execCommand('selectAll');
+            },
+            // Ctrl/Cmd + C to copy (explicit)
+            'Ctrl-C': (cm) => {
+                if (cm.somethingSelected()) {
+                    document.execCommand('copy');
+                }
+            },
+            'Cmd-C': (cm) => {
+                if (cm.somethingSelected()) {
+                    document.execCommand('copy');
+                }
             },
             // Ctrl/Cmd + Enter to run code
             'Ctrl-Enter': (cm) => {
@@ -69,16 +92,44 @@ function initCodeEditor(textareaId, options = {}) {
     // Initialize CodeMirror
     const editor = CodeMirror.fromTextArea(textarea, config);
 
-    // Set initial size
-    editor.setSize('100%', 'auto');
-    editor.setOption('viewportMargin', Infinity);
+    // Set initial size - use pixel height for proper scrolling
+    const minHeight = 300;
+    const maxHeight = 600;
+    editor.setSize('100%', minHeight);
+    
+    // Auto-adjust height based on content (but within limits)
+    editor.on('change', (cm) => {
+        textarea.value = cm.getValue();
+        
+        // Auto-resize based on content
+        const lines = cm.lineCount();
+        const lineHeight = 20; // approximate line height
+        const calculatedHeight = Math.min(Math.max(lines * lineHeight + 20, minHeight), maxHeight);
+        editor.setSize('100%', calculatedHeight);
+    });
 
     // Store instance
     editorInstances.set(textareaId, editor);
 
-    // Add event listener to sync with textarea
-    editor.on('change', (cm) => {
-        textarea.value = cm.getValue();
+    // Initial size adjustment
+    const initialLines = editor.lineCount();
+    const initialHeight = Math.min(Math.max(initialLines * 20 + 20, minHeight), maxHeight);
+    editor.setSize('100%', initialHeight);
+
+    // Refresh editor to ensure proper rendering
+    setTimeout(() => {
+        editor.refresh();
+        console.log(`✅ CodeMirror initialized for ${textareaId}`, {
+            lines: initialLines,
+            height: initialHeight,
+            readOnly: editor.getOption('readOnly'),
+            mode: editor.getOption('mode')
+        });
+    }, 100);
+
+    // Focus editor on click
+    editor.on('mousedown', () => {
+        editor.focus();
     });
 
     return editor;
