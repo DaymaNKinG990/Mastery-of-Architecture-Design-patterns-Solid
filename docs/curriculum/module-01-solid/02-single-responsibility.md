@@ -282,81 +282,6 @@ user_service = UserService(
 
 ---
 
-## 🎮 Практические упражнения
-
-### Упражнение 1: Анализ класса
-
-Проанализируйте этот класс:
-
-```python
-class OrderProcessor:
-    def process_order(self, order_data):
-        # Валидация заказа
-        # Сохранение в БД  
-        # Обработка платежа
-        # Отправка email
-        # Обновление склада
-        pass
-```
-
-**Вопросы:**
-1. **Сколько ответственностей у класса?**
-
-   > 💡 *Подсказка: посчитайте комментарии - каждый может быть отдельной ответственностью*
-
-2. **Как бы вы разделили его?**
-
-   > 💡 *Подсказка: каждая ответственность = отдельный класс, OrderProcessor остается координатором*
-
-### Упражнение 2: Рефакторинг
-
-```python
-class FileManager:
-    def read_file(self, filename): pass
-    def write_file(self, filename, content): pass  
-    def compress_file(self, filename): pass
-    def encrypt_file(self, filename, key): pass
-    def upload_to_cloud(self, filename): pass
-```
-
-**Задача:** Разделите на классы с единственной ответственностью:
-
-- `FileReader` / `FileWriter` 
-- `FileCompressor`
-- `FileEncryptor`
-- `CloudUploader`
-
-**💡 Подсказки для рефакторинга:**
-> **Нужно создать:**
-
-> - 📋 **4 Protocol** (интерфейса) для различных операций
-> - 🔧 **4 реализации** конкретных классов  
-> - 🎯 **1 координатор** FileManager для оркестрации
-
-### Упражнение 3: Создание сервисов
-
-**Создайте систему для интернет-магазина:**
-
-- `ProductService` - управление товарами
-- `OrderService` - обработка заказов  
-- `PaymentService` - обработка платежей
-- `NotificationService` - уведомления
-
-**💡 Подсказки для реализации:**
-> **Архитектура:** Система должна состоять из **4 бизнес-доменов**
-> 
-> **Нужно создать:** 
-
-> - 📋 **4 Protocol** (интерфейса) для каждого сервиса
-> - 🔧 **4+ реализации** конкретных классов
-> - 🎯 **1 координатор** ECommerceSystem для оркестрации сервисов
->
-> **Пример структуры:**
-> - `PaymentProcessor(Protocol)` → `StripePaymentProcessor`, `PayPalProcessor`
-> - `NotificationSender(Protocol)` → `SMTPEmailService`, `SlackNotifier`
-
----
-
 ## 🎯 Ключевые выводы
 
 1. **SRP = одна причина для изменения**
@@ -458,51 +383,17 @@ class FileManager:
 </script>
 </div>
 
-## 💻 Практическое задание: SRP Рефакторинг
+## 💻 Интерактивные упражнения
 
-Рефакторьте этот класс согласно SRP:
+Попробуйте решить все задачи прямо в браузере! Каждое упражнение проверяет ваше понимание SRP на практике.
 
-```python
-# ЗАДАНИЕ: Разделите этот класс на несколько с единственной ответственностью
-class UserService:
-    def create_user(self, user_data):
-        # 1. Валидация данных
-        if not self._validate_data(user_data):
-            raise ValueError("Invalid data")
-        
-        # 2. Создание пользователя
-        user = User(**user_data)
-        
-        # 3. Сохранение в БД
-        self._save_to_db(user)
-        
-        # 4. Отправка email
-        self._send_welcome_email(user)
-        
-        return user
-    
-    def _validate_data(self, data): pass
-    def _save_to_db(self, user): pass  
-    def _send_welcome_email(self, user): pass
+### Упражнение 1: Рефакторинг UserService
 
-# TODO: Создайте отдельные классы:
-# - UserValidator (валидация)
-# - UserRepository (сохранение) 
-# - EmailService (уведомления)
-# - UserService (только бизнес-логика)
-```
-
-**Результат:** 4 класса с четкими ответственностями вместо одного "божественного" класса!
-
----
-
-## 🎮 Интерактивное упражнение
-
-Попробуйте решить задачу прямо здесь:
+Разделите класс `UserService` на отдельные классы с единственной ответственностью:
 
 {{ code_input_form(
     exercise_id="srp_refactoring_01",
-    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    email: str\n    password: str\n\n# TODO: Создайте классы согласно SRP:\n# 1. UserValidator - для валидации\n# 2. UserRepository - для сохранения\n# 3. EmailService - для отправки email\n# 4. UserService - координатор\n\n# Ваш код здесь:\n",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    email: str\n    password: str\n\n# ЗАДАНИЕ: Разделите этот класс на несколько с единственной ответственностью\nclass UserService:\n    def create_user(self, user_data):\n        # 1. Валидация данных\n        if not self._validate_data(user_data):\n            raise ValueError(\"Invalid data\")\n        \n        # 2. Создание пользователя\n        user = User(**user_data)\n        \n        # 3. Сохранение в БД\n        self._save_to_db(user)\n        \n        # 4. Отправка email\n        self._send_welcome_email(user)\n        \n        return user\n    \n    def _validate_data(self, data): pass\n    def _save_to_db(self, user): pass  \n    def _send_welcome_email(self, user): pass\n\n# TODO: Создайте отдельные классы:\n# 1. UserValidator(Protocol) - валидация\n# 2. UserRepository(Protocol) - сохранение \n# 3. EmailService(Protocol) - уведомления\n# 4. UserService - только бизнес-логика (координатор)\n\n# Ваш код здесь:\n",
     placeholder="Создайте классы с единственной ответственностью...",
     use_pyodide=True,
     test_cases=[
@@ -517,9 +408,121 @@ class UserService:
         {
             "code": "assert 'EmailService' in globals(), 'Создайте класс EmailService'",
             "description": "Класс EmailService должен существовать"
+        },
+        {
+            "code": "validator = UserValidator if not isinstance(UserValidator, type(Protocol)) else None; assert validator is None or hasattr(validator, 'validate'), 'UserValidator должен иметь метод validate'",
+            "description": "UserValidator должен иметь метод validate"
         }
     ]
 ) }}
 
-!!! tip "Подсказка"
+!!! tip "Подсказка для упражнения 1"
     Используйте Protocol для создания интерфейсов, а затем реализуйте конкретные классы. UserService должен принимать эти зависимости через конструктор (Dependency Injection).
+
+### Упражнение 2: Рефакторинг OrderProcessor
+
+Проанализируйте класс `OrderProcessor` и разделите его на отдельные ответственности:
+
+{{ code_input_form(
+    exercise_id="srp_order_processor",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\n\n@dataclass\nclass Order:\n    order_id: str\n    amount: float\n    customer_email: str\n\n# TODO: Разделите OrderProcessor на отдельные классы:\n# 1. OrderValidator - валидация заказа\n# 2. OrderRepository - сохранение в БД\n# 3. PaymentProcessor - обработка платежа\n# 4. EmailNotifier - отправка email\n# 5. InventoryManager - обновление склада\n# 6. OrderProcessor - координатор всех операций\n\n# Исходный код с нарушением SRP:\nclass OrderProcessor:\n    def process_order(self, order_data):\n        # Валидация заказа\n        # Сохранение в БД  \n        # Обработка платежа\n        # Отправка email\n        # Обновление склада\n        pass\n\n# Ваш рефакторинг здесь:\n",
+    placeholder="Создайте отдельные классы для каждой ответственности...",
+    use_pyodide=True,
+    test_cases=[
+        {
+            "code": "assert 'OrderValidator' in globals(), 'Создайте класс OrderValidator'",
+            "description": "Класс OrderValidator должен существовать"
+        },
+        {
+            "code": "assert 'OrderRepository' in globals(), 'Создайте класс OrderRepository'",
+            "description": "Класс OrderRepository должен существовать"
+        },
+        {
+            "code": "assert 'PaymentProcessor' in globals(), 'Создайте класс PaymentProcessor'",
+            "description": "Класс PaymentProcessor должен существовать"
+        },
+        {
+            "code": "assert 'EmailNotifier' in globals(), 'Создайте класс EmailNotifier'",
+            "description": "Класс EmailNotifier должен существовать"
+        },
+        {
+            "code": "assert 'InventoryManager' in globals(), 'Создайте класс InventoryManager'",
+            "description": "Класс InventoryManager должен существовать"
+        }
+    ]
+) }}
+
+!!! tip "Подсказка для упражнения 2"
+    Класс имеет **5 ответственностей** (посчитайте комментарии). Создайте отдельный класс для каждой ответственности, используя Protocol для интерфейсов. OrderProcessor должен стать координатором, принимающим все зависимости через конструктор.
+
+### Упражнение 3: Рефакторинг FileManager
+
+Разделите `FileManager` на специализированные классы:
+
+{{ code_input_form(
+    exercise_id="srp_file_manager",
+    initial_code="from typing import Protocol\n\n# TODO: Создайте протоколы и реализации:\n# 1. FileReader(Protocol) - чтение файлов\n# 2. FileWriter(Protocol) - запись файлов\n# 3. FileCompressor(Protocol) - сжатие файлов\n# 4. FileEncryptor(Protocol) - шифрование файлов\n# 5. CloudUploader(Protocol) - загрузка в облако\n# 6. FileManager - координатор операций\n\n# Исходный код с нарушением SRP:\nclass FileManager:\n    def read_file(self, filename): pass\n    def write_file(self, filename, content): pass  \n    def compress_file(self, filename): pass\n    def encrypt_file(self, filename, key): pass\n    def upload_to_cloud(self, filename): pass\n\n# Ваш рефакторинг здесь:\n",
+    placeholder="Создайте протоколы и конкретные реализации...",
+    use_pyodide=True,
+    test_cases=[
+        {
+            "code": "assert 'FileReader' in globals(), 'Создайте протокол FileReader'",
+            "description": "Протокол FileReader должен существовать"
+        },
+        {
+            "code": "assert 'FileWriter' in globals(), 'Создайте протокол FileWriter'",
+            "description": "Протокол FileWriter должен существовать"
+        },
+        {
+            "code": "assert 'FileCompressor' in globals(), 'Создайте протокол FileCompressor'",
+            "description": "Протокол FileCompressor должен существовать"
+        },
+        {
+            "code": "assert 'FileEncryptor' in globals(), 'Создайте протокол FileEncryptor'",
+            "description": "Протокол FileEncryptor должен существовать"
+        },
+        {
+            "code": "assert 'CloudUploader' in globals(), 'Создайте протокол CloudUploader'",
+            "description": "Протокол CloudUploader должен существовать"
+        }
+    ]
+) }}
+
+!!! tip "Подсказка для упражнения 3"
+    Создайте **5 протоколов** для разных операций с файлами. Каждый протокол должен иметь один основной метод. Затем создайте конкретные реализации (например, `LocalFileReader`, `GZipCompressor`). FileManager координирует все операции через эти интерфейсы.
+
+### Упражнение 4: Система интернет-магазина
+
+Создайте архитектуру e-commerce системы с разделением ответственностей:
+
+{{ code_input_form(
+    exercise_id="srp_ecommerce_system",
+    initial_code="from typing import Protocol\nfrom dataclasses import dataclass\nfrom decimal import Decimal\n\n@dataclass\nclass Product:\n    product_id: str\n    name: str\n    price: Decimal\n    stock: int\n\n@dataclass\nclass Order:\n    order_id: str\n    product_id: str\n    quantity: int\n    total: Decimal\n\n# TODO: Создайте 4 бизнес-домена:\n# 1. ProductService(Protocol) - управление товарами\n#    → Реализация: ProductCatalog\n# 2. OrderService(Protocol) - обработка заказов\n#    → Реализация: OrderManager\n# 3. PaymentService(Protocol) - обработка платежей\n#    → Реализации: StripePaymentProcessor, PayPalProcessor\n# 4. NotificationService(Protocol) - уведомления\n#    → Реализации: SMTPEmailService, SlackNotifier\n# 5. ECommerceSystem - координатор всех сервисов\n\n# Ваш код здесь:\n",
+    placeholder="Создайте сервисы для e-commerce системы...",
+    use_pyodide=True,
+    test_cases=[
+        {
+            "code": "assert 'ProductService' in globals(), 'Создайте протокол ProductService'",
+            "description": "Протокол ProductService должен существовать"
+        },
+        {
+            "code": "assert 'OrderService' in globals(), 'Создайте протокол OrderService'",
+            "description": "Протокол OrderService должен существовать"
+        },
+        {
+            "code": "assert 'PaymentService' in globals(), 'Создайте протокол PaymentService'",
+            "description": "Протокол PaymentService должен существовать"
+        },
+        {
+            "code": "assert 'NotificationService' in globals(), 'Создайте протокол NotificationService'",
+            "description": "Протокол NotificationService должен существовать"
+        },
+        {
+            "code": "assert 'ECommerceSystem' in globals(), 'Создайте класс-координатор ECommerceSystem'",
+            "description": "Класс ECommerceSystem должен существовать"
+        }
+    ]
+) }}
+
+!!! tip "Подсказка для упражнения 4"
+    Создайте **4 протокола** для бизнес-доменов. Для каждого протокола создайте минимум одну реализацию (для PaymentService и NotificationService - по две). ECommerceSystem должен принимать все сервисы через конструктор и координировать их работу. Например: `create_order()` использует ProductService → OrderService → PaymentService → NotificationService.
