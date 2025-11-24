@@ -1,0 +1,239 @@
+/**
+ * CodeMirror integration for interactive code exercises
+ * Provides syntax highlighting, tab handling, and better code editing experience
+ */
+
+// Store CodeMirror instances
+const editorInstances = new Map();
+
+/**
+ * Initialize CodeMirror for a textarea
+ * @param {string} textareaId - ID of the textarea element
+ * @param {object} options - CodeMirror configuration options
+ * @returns {CodeMirror} - CodeMirror instance
+ */
+function initCodeEditor(textareaId, options = {}) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) {
+        console.error(`Textarea with id "${textareaId}" not found`);
+        return null;
+    }
+
+    // Check if CodeMirror is already initialized for this textarea
+    if (editorInstances.has(textareaId)) {
+        return editorInstances.get(textareaId);
+    }
+
+    // Default CodeMirror configuration
+    const defaultConfig = {
+        mode: 'python',
+        theme: 'monokai',
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: false,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        styleActiveLine: true,
+        extraKeys: {
+            // Handle Tab key for indentation
+            'Tab': (cm) => {
+                if (cm.somethingSelected()) {
+                    cm.indentSelection('add');
+                } else {
+                    cm.replaceSelection('    ', 'end');
+                }
+            },
+            // Handle Shift-Tab for unindent
+            'Shift-Tab': (cm) => {
+                cm.indentSelection('subtract');
+            },
+            // Ctrl/Cmd + Enter to run code
+            'Ctrl-Enter': (cm) => {
+                const exerciseId = textareaId.replace('code_input_', '');
+                const runButton = document.getElementById(`run_button_${exerciseId}`);
+                if (runButton) runButton.click();
+            },
+            'Cmd-Enter': (cm) => {
+                const exerciseId = textareaId.replace('code_input_', '');
+                const runButton = document.getElementById(`run_button_${exerciseId}`);
+                if (runButton) runButton.click();
+            }
+        }
+    };
+
+    // Merge user options with defaults
+    const config = { ...defaultConfig, ...options };
+
+    // Initialize CodeMirror
+    const editor = CodeMirror.fromTextArea(textarea, config);
+
+    // Set initial size
+    editor.setSize('100%', 'auto');
+    editor.setOption('viewportMargin', Infinity);
+
+    // Store instance
+    editorInstances.set(textareaId, editor);
+
+    // Add event listener to sync with textarea
+    editor.on('change', (cm) => {
+        textarea.value = cm.getValue();
+    });
+
+    return editor;
+}
+
+/**
+ * Get CodeMirror instance for a textarea
+ * @param {string} textareaId - ID of the textarea
+ * @returns {CodeMirror|null} - CodeMirror instance or null
+ */
+function getCodeEditor(textareaId) {
+    return editorInstances.get(textareaId) || null;
+}
+
+/**
+ * Get code value from editor (works with both CodeMirror and plain textarea)
+ * @param {string} textareaId - ID of the textarea
+ * @returns {string} - Code content
+ */
+function getCodeValue(textareaId) {
+    const editor = editorInstances.get(textareaId);
+    if (editor) {
+        return editor.getValue();
+    }
+    const textarea = document.getElementById(textareaId);
+    return textarea ? textarea.value : '';
+}
+
+/**
+ * Set code value in editor (works with both CodeMirror and plain textarea)
+ * @param {string} textareaId - ID of the textarea
+ * @param {string} code - Code to set
+ */
+function setCodeValue(textareaId, code) {
+    const editor = editorInstances.get(textareaId);
+    if (editor) {
+        editor.setValue(code);
+    } else {
+        const textarea = document.getElementById(textareaId);
+        if (textarea) {
+            textarea.value = code;
+        }
+    }
+}
+
+/**
+ * Initialize all code editors on the page
+ */
+function initAllCodeEditors() {
+    // Find all textareas with class 'code-textarea'
+    const textareas = document.querySelectorAll('textarea.code-textarea');
+    
+    textareas.forEach(textarea => {
+        // Only initialize if CodeMirror is loaded
+        if (typeof CodeMirror !== 'undefined') {
+            initCodeEditor(textarea.id);
+        } else {
+            console.warn('CodeMirror not loaded, using plain textarea with Tab handling fallback');
+            setupPlainTextareaTabHandling(textarea);
+        }
+    });
+}
+
+/**
+ * Fallback: Setup Tab handling for plain textarea (if CodeMirror is not available)
+ * @param {HTMLTextAreaElement} textarea - Textarea element
+ */
+function setupPlainTextareaTabHandling(textarea) {
+    textarea.addEventListener('keydown', function(e) {
+        // Handle Tab key
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const value = this.value;
+            
+            if (e.shiftKey) {
+                // Shift+Tab: Remove indentation
+                const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                const line = value.substring(lineStart, start);
+                
+                if (line.startsWith('    ')) {
+                    this.value = value.substring(0, lineStart) + 
+                                value.substring(lineStart + 4);
+                    this.selectionStart = this.selectionEnd = start - 4;
+                } else if (line.startsWith('\t')) {
+                    this.value = value.substring(0, lineStart) + 
+                                value.substring(lineStart + 1);
+                    this.selectionStart = this.selectionEnd = start - 1;
+                }
+            } else {
+                // Tab: Add indentation
+                this.value = value.substring(0, start) + '    ' + value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        }
+        
+        // Ctrl/Cmd + Enter: Run code
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            const exerciseId = this.id.replace('code_input_', '');
+            const runButton = document.getElementById(`run_button_${exerciseId}`);
+            if (runButton) runButton.click();
+        }
+    });
+}
+
+/**
+ * Reset code editor to initial value
+ * @param {string} exerciseId - Exercise ID
+ */
+function resetCodeEditor(exerciseId) {
+    const textareaId = `code_input_${exerciseId}`;
+    const textarea = document.getElementById(textareaId);
+    
+    if (!textarea) return;
+    
+    const initialCode = textarea.getAttribute('data-initial') || '';
+    const decodedCode = initialCode.replace(/\\n/g, '\n');
+    
+    setCodeValue(textareaId, decodedCode);
+    
+    // Hide output
+    const output = document.getElementById(`output_${exerciseId}`);
+    if (output) {
+        output.style.display = 'none';
+    }
+}
+
+/**
+ * Enhanced resetCode function that works with CodeMirror
+ */
+window.resetCode = resetCodeEditor;
+
+// Initialize editors when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAllCodeEditors);
+} else {
+    initAllCodeEditors();
+}
+
+// Re-initialize on navigation (for SPA-like behavior in MkDocs Material)
+document.addEventListener('DOMContentLoaded', function() {
+    // MkDocs Material theme instant navigation support
+    const instantNavigation = document.querySelector('[data-md-component="navigation"]');
+    if (instantNavigation) {
+        document.addEventListener('instant:navigation', initAllCodeEditors);
+    }
+});
+
+// Export functions for global use
+window.initCodeEditor = initCodeEditor;
+window.getCodeEditor = getCodeEditor;
+window.getCodeValue = getCodeValue;
+window.setCodeValue = setCodeValue;
+window.resetCodeEditor = resetCodeEditor;
+

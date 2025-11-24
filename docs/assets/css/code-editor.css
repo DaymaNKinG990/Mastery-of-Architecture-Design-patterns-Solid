@@ -1,0 +1,204 @@
+/**
+ * CodeMirror editor styling for interactive exercises
+ */
+
+/* CodeMirror container */
+.CodeMirror {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Fira Code', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    height: auto;
+    min-height: 200px;
+    max-height: 600px;
+    background: #272822;
+    color: #f8f8f2;
+}
+
+/* Dark theme adjustments */
+[data-md-color-scheme="slate"] .CodeMirror {
+    border-color: #424242;
+    background: #1e1e1e;
+}
+
+/* Light theme adjustments */
+[data-md-color-scheme="default"] .CodeMirror {
+    border-color: #e0e0e0;
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* Active line highlighting */
+.CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Line numbers */
+.CodeMirror-linenumber {
+    color: #75715e;
+    padding: 0 8px;
+    font-size: 13px;
+}
+
+/* Cursor */
+.CodeMirror-cursor {
+    border-left: 2px solid #f8f8f0;
+}
+
+/* Selection */
+.CodeMirror-selected {
+    background: rgba(73, 72, 62, 0.8);
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+    background: rgba(73, 72, 62, 1);
+}
+
+/* Matching brackets */
+.CodeMirror-matchingbracket {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid #66d9ef;
+}
+
+.CodeMirror-nonmatchingbracket {
+    color: #f92672 !important;
+    background-color: rgba(249, 38, 114, 0.2);
+}
+
+/* Gutters */
+.CodeMirror-gutters {
+    background: #23241f;
+    border-right: 1px solid #3e3d32;
+}
+
+[data-md-color-scheme="default"] .CodeMirror-gutters {
+    background: #e8e8e8;
+    border-right: 1px solid #ccc;
+}
+
+/* Scrollbar styling */
+.CodeMirror-scrollbar-filler,
+.CodeMirror-gutter-filler {
+    background-color: #272822;
+}
+
+[data-md-color-scheme="default"] .CodeMirror-scrollbar-filler,
+[data-md-color-scheme="default"] .CodeMirror-gutter-filler {
+    background-color: #f5f5f5;
+}
+
+/* Focus state */
+.CodeMirror-focused {
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+/* Code exercise container adjustments */
+.code-exercise .CodeMirror {
+    margin-bottom: 16px;
+}
+
+/* Ensure textarea is hidden when CodeMirror is active */
+.code-textarea.CodeMirror-replaced {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .CodeMirror {
+        font-size: 13px;
+        min-height: 150px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .CodeMirror {
+        border: 1px solid #000;
+        height: auto;
+    }
+    
+    .CodeMirror-gutters {
+        border-right: 1px solid #000;
+    }
+}
+
+/* Placeholder text for empty editor */
+.CodeMirror-placeholder {
+    color: #75715e !important;
+    font-style: italic;
+}
+
+[data-md-color-scheme="default"] .CodeMirror-placeholder {
+    color: #999 !important;
+}
+
+/* Autocomplete popup styling */
+.CodeMirror-hints {
+    background: #272822;
+    border: 1px solid #3e3d32;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+}
+
+[data-md-color-scheme="default"] .CodeMirror-hints {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.CodeMirror-hint {
+    color: #f8f8f2;
+    padding: 4px 8px;
+}
+
+[data-md-color-scheme="default"] .CodeMirror-hint {
+    color: #333;
+}
+
+.CodeMirror-hint:hover,
+.CodeMirror-hint-active {
+    background: #49483e;
+    color: #ffffff;
+}
+
+[data-md-color-scheme="default"] .CodeMirror-hint:hover,
+[data-md-color-scheme="default"] .CodeMirror-hint-active {
+    background: #e3f2fd;
+    color: #000;
+}
+
+/* Loading state for editor */
+.code-exercise.loading .CodeMirror {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Error state */
+.code-exercise.has-error .CodeMirror {
+    border-color: #f44336;
+}
+
+/* Success state */
+.code-exercise.has-success .CodeMirror {
+    border-color: #4caf50;
+}
+
+/* Keyboard shortcut hint */
+.code-exercise::after {
+    content: 'Подсказка: Ctrl/Cmd+Enter для запуска кода';
+    display: block;
+    font-size: 12px;
+    color: #75715e;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+[data-md-color-scheme="default"] .code-exercise::after {
+    color: #999;
+}
+

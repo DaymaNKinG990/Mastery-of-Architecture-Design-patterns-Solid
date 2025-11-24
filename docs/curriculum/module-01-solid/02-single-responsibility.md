@@ -411,10 +411,116 @@ class UserService:
         
         return user
     
-    def _validate_data(self, data): pass
-    def _save_to_db(self, user): pass  
-    def _send_welcome_email(self, user): pass
+    def _validate_data(self, data):
+        """
+        Validates user data structure and content.
+        
+        Checks:
+        - Required fields present: 'name', 'email', 'password'
+        - Name: not empty, length 2-50 characters
+        - Email: valid format (contains @ and domain)
+        - Password: minimum 8 characters, contains digit
+        
+        Args:
+            data: dict with keys 'name', 'email', 'password'
+        Returns:
+            bool: True if valid, False otherwise
+        """
+        import re
+        
+        if not all(k in data for k in ['name', 'email', 'password']):
+            return False
+        
+        # Validate name
+        if not data['name'] or len(data['name']) < 2 or len(data['name']) > 50:
+            return False
+        
+        # Validate email format
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, data['email']):
+            return False
+        
+        # Validate password strength
+        if len(data['password']) < 8 or not any(c.isdigit() for c in data['password']):
+            return False
+        
+        return True
+    
+    def _save_to_db(self, user):
+        """
+        Saves user to database.
+        
+        Example implementation using SQLite:
+        - Connects to database
+        - Executes INSERT query
+        - Commits transaction
+        - Handles duplicates
+        
+        In production would use ORM (SQLAlchemy, Django ORM) or 
+        connection pool for better performance.
+        """
+        import sqlite3
+        
+        conn = sqlite3.connect('users.db')
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT INTO users (name, email, password)
+                VALUES (?, ?, ?)
+            ''', (user.name, user.email, user.password))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            raise ValueError(f"User with email {user.email} already exists")
+        finally:
+            conn.close()
+    
+    def _send_welcome_email(self, user):
+        """
+        Sends welcome email to new user.
+        
+        Example implementation using SMTP:
+        - Connects to SMTP server
+        - Authenticates
+        - Sends formatted email
+        - Handles errors
+        
+        In production would use email service (SendGrid, AWS SES)
+        or task queue (Celery) for async processing.
+        """
+        import smtplib
+        from email.mime.text import MIMEText
+        
+        msg = MIMEText(f'''
+        Welcome to our platform, {user.name}!
+        
+        Your account has been successfully created.
+        Email: {user.email}
+        
+        Best regards,
+        Team
+        ''')
+        
+        msg['Subject'] = 'Welcome!'
+        msg['From'] = 'noreply@example.com'
+        msg['To'] = user.email
+        
+        try:
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.starttls()
+                server.login('your_email@gmail.com', 'your_password')
+                server.send_message(msg)
+        except Exception as e:
+            print(f"Failed to send email: {e}")
 ```
+
+**Проблемы этого подхода:**
+
+- ❌ `UserService` знает о структуре БД, SMTP-сервере, форматах email, регулярных выражениях
+- ❌ Невозможно протестировать создание пользователя без реальной БД и SMTP
+- ❌ Нельзя переиспользовать валидацию email в других местах (регистрация админа, изменение email)
+- ❌ Изменение способа валидации требует изменения `UserService`
+- ❌ Замена SQLite на PostgreSQL или замена SMTP на SendGrid требует изменения этого класса
 
 **Что нужно сделать:**
 

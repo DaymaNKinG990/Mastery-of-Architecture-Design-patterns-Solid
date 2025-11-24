@@ -136,6 +136,7 @@ nav:
     - Моделирование домена: curriculum/module-05-project/03-domain-modeling.md
   - Справочники:
     - Интерактивные упражнения: INTERACTIVE_EXERCISES_GUIDE.md
+    - Возможности редактора кода: CODE_EDITOR_FEATURES.md
     - Генерация видео-туториалов: VIDEO_TUTORIALS_GUIDE.md
   - Практические задания: exercises/README.md
   - 🎉 Заключение курса: conclusion.md
@@ -165,9 +166,26 @@ extra:
 extra_css:
   - stylesheets/extra.css
   - assets/css/quiz.css
+  - assets/css/code-editor.css
+  # CodeMirror CSS
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css
 
 extra_javascript:
+  # CodeMirror core
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js
+  # CodeMirror Python mode
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js
+  # CodeMirror addons
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/python-hint.min.js
+  # Custom scripts
   - assets/js/quiz.js
+  - assets/js/code-editor.js
   - assets/js/pyodide-exercise.js
 
 copyright: Copyright &copy; 2024 Мастерство архитектуры и паттернов проектирования

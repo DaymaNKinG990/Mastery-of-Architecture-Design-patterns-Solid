@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест редактора кода</title>
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/code-editor.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #f0f0f0;
+        }
+        h1 {
+            color: #2196f3;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .success {
+            color: #4caf50;
+        }
+        .info {
+            color: #2196f3;
+        }
+        .code-exercise {
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .run-button {
+            background: #2196f3;
+            color: white;
+        }
+        .run-button:hover {
+            background: #1976d2;
+        }
+        .run-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .reset-button {
+            background: #666;
+            color: white;
+        }
+        .reset-button:hover {
+            background: #888;
+        }
+        .exercise-output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #1e1e1e;
+        }
+        .exercise-output.success {
+            border-left: 4px solid #4caf50;
+        }
+        .exercise-output.error {
+            border-left: 4px solid #f44336;
+        }
+        .test-list {
+            list-style: none;
+            padding: 0;
+        }
+        .test-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 4px;
+        }
+        .test-list li:before {
+            content: '✓ ';
+            color: #4caf50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Тест редактора кода CodeMirror</h1>
+    
+    <div class="test-section">
+        <h2 class="info">Инструкции по тестированию</h2>
+        <p>Проверьте следующие функции:</p>
+        <ul class="test-list">
+            <li>Подсветка синтаксиса Python работает</li>
+            <li>Tab добавляет 4 пробела вместо переключения фокуса</li>
+            <li>Shift+Tab убирает отступ</li>
+            <li>Ctrl/Cmd+Enter запускает код</li>
+            <li>Автозакрытие скобок работает</li>
+            <li>Подсветка парных скобок работает</li>
+            <li>Номера строк отображаются</li>
+            <li>Копирование/вставка работает корректно</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2 class="success">Тестовое упражнение</h2>
+        
+        <div class="code-exercise" id="test_exercise">
+            <form id="code_form_test_exercise" class="code-input-form">
+                <div class="form-group">
+                    <label for="code_input_test_exercise">Ваш Python код:</label>
+                    <textarea
+                        id="code_input_test_exercise"
+                        name="user_code"
+                        class="code-textarea"
+                        rows="15"
+                        placeholder="Начните вводить код здесь..."
+                        data-initial="def greet(name):\n    return f'Hello, {name}!'\n\n# Тест функции\nprint(greet('World'))"
+                        spellcheck="false"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                    >def greet(name):
+    return f'Hello, {name}!'
+
+# Тест функции
+print(greet('World'))</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="run_button_test_exercise" class="run-button" onclick="testRun()">
+                        🚀 Запустить код
+                    </button>
+                    <button type="button" class="reset-button" onclick="testReset()">
+                        🔄 Сбросить
+                    </button>
+                </div>
+            </form>
+            <div id="output_test_exercise" class="exercise-output" style="display: none;">
+                <h4>Результаты:</h4>
+                <div class="output-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="info">Горячие клавиши</h2>
+        <ul>
+            <li><strong>Tab</strong> - добавить отступ (4 пробела)</li>
+            <li><strong>Shift+Tab</strong> - убрать отступ</li>
+            <li><strong>Ctrl/Cmd+Enter</strong> - запустить код</li>
+            <li><strong>Ctrl/Cmd+Z</strong> - отменить</li>
+            <li><strong>Ctrl/Cmd+Y</strong> - повторить</li>
+            <li><strong>Ctrl/Cmd+A</strong> - выделить всё</li>
+            <li><strong>Двойной клик</strong> - выделить слово</li>
+            <li><strong>Тройной клик</strong> - выделить строку</li>
+        </ul>
+    </div>
+
+    <!-- CodeMirror JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/python-hint.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="assets/js/code-editor.js"></script>
+    
+    <script>
+        function testRun() {
+            const button = document.getElementById('run_button_test_exercise');
+            const output = document.getElementById('output_test_exercise');
+            const outputContent = output.querySelector('.output-content');
+            
+            button.innerHTML = '⏳ Выполняется...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                const code = window.getCodeValue('code_input_test_exercise');
+                
+                outputContent.innerHTML = `
+                    <div class="success-message">
+                        <h5 class="success">✅ Редактор работает!</h5>
+                        <p>Введенный код:</p>
+                        <pre style="background: #1e1e1e; padding: 10px; border-radius: 4px; overflow-x: auto;">${code}</pre>
+                        <p><strong>Примечание:</strong> Для реального выполнения кода нужен Pyodide.</p>
+                    </div>
+                `;
+                output.style.display = 'block';
+                output.className = 'exercise-output success';
+                
+                button.innerHTML = '🚀 Запустить код';
+                button.disabled = false;
+            }, 500);
+        }
+        
+        function testReset() {
+            window.resetCodeEditor('test_exercise');
+        }
+        
+        // Проверка загрузки
+        window.addEventListener('load', () => {
+            if (typeof CodeMirror !== 'undefined') {
+                console.log('✅ CodeMirror загружен успешно');
+            } else {
+                console.error('❌ CodeMirror не загружен');
+            }
+            
+            if (typeof window.initCodeEditor === 'function') {
+                console.log('✅ code-editor.js загружен успешно');
+            } else {
+                console.error('❌ code-editor.js не загружен');
+            }
+        });
+    </script>
+</body>
+</html>
+

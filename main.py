@@ -98,12 +98,11 @@ def code_input_form(
         else f"runExerciseSimple('{exercise_id}')"
     )
 
-    # Add Pyodide script if needed
+    # Add Pyodide script if needed (only once per page)
     pyodide_script = ""
     if use_pyodide:
         pyodide_script = """
-<script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-<script src="/assets/js/pyodide-exercise.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js"></script>
 """
 
     return f"""
@@ -116,10 +115,14 @@ def code_input_form(
                 id="{textarea_id}"
                 name="user_code"
                 class="code-textarea"
-                rows="10"
+                rows="15"
                 placeholder="{escaped_placeholder}"
                 data-initial="{escaped_initial}"
+                data-exercise-id="{exercise_id}"
                 spellcheck="false"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
             >{initial_code}</textarea>
         </div>
         <div class="form-actions">

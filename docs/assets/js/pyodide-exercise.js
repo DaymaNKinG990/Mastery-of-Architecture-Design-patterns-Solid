@@ -117,7 +117,10 @@ async function runExerciseWithPyodide(exerciseId, testCases) {
     button.innerHTML = '⏳ Выполняется...';
     button.disabled = true;
     
-    const userCode = textarea.value;
+    // Get code from CodeMirror editor if available, otherwise from textarea
+    const userCode = typeof window.getCodeValue === 'function' 
+        ? window.getCodeValue(`code_input_${exerciseId}`)
+        : textarea.value;
     
     try {
         // Build test code
@@ -214,7 +217,10 @@ function runExerciseSimple(exerciseId) {
     button.disabled = true;
     
     setTimeout(() => {
-        const userCode = textarea.value;
+        // Get code from CodeMirror editor if available, otherwise from textarea
+        const userCode = typeof window.getCodeValue === 'function' 
+            ? window.getCodeValue(`code_input_${exerciseId}`)
+            : textarea.value;
         let result;
         
         try {
