@@ -247,13 +247,6 @@ function initCodeEditor(textareaId, options = {}) {
     editor.on('dblclick', (cm) => {
         // Double click selects word - let it work
     });
-    
-    // CRITICAL: Prevent any interference with text selection
-    const wrapper = editor.getWrapperElement();
-    wrapper.style.userSelect = 'text';
-    wrapper.style.webkitUserSelect = 'text';
-    wrapper.style.mozUserSelect = 'text';
-    wrapper.style.msUserSelect = 'text';
 
     return editor;
 }
