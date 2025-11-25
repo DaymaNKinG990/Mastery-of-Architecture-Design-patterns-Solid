@@ -49,13 +49,29 @@
     border-left: 2px solid #f8f8f0;
 }
 
-/* Selection */
+/* CRITICAL: CodeMirror 5 selection - must be visible and work */
 .CodeMirror-selected {
-    background: rgba(73, 72, 62, 0.8);
+    background: rgba(73, 72, 62, 0.8) !important;
+    color: inherit !important;
 }
 
 .CodeMirror-focused .CodeMirror-selected {
-    background: rgba(73, 72, 62, 1);
+    background: rgba(73, 72, 62, 1) !important;
+    color: inherit !important;
+}
+
+/* CRITICAL: Ensure selection text is visible */
+.CodeMirror-selectedtext {
+    background: transparent !important;
+}
+
+/* CRITICAL: CodeMirror 5 uses .CodeMirror-selected for selection */
+.CodeMirror-line > span > span.CodeMirror-selected {
+    background: rgba(73, 72, 62, 0.8) !important;
+}
+
+.CodeMirror-focused .CodeMirror-line > span > span.CodeMirror-selected {
+    background: rgba(73, 72, 62, 1) !important;
 }
 
 /* Matching brackets */

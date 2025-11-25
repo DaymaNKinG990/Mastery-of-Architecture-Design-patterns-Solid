@@ -37,10 +37,12 @@ function initCodeEditor(textareaId, options = {}) {
         matchBrackets: true,
         styleActiveLine: true,
         readOnly: false,  // Ensure editor is editable
-        dragDrop: true,   // Enable drag and drop
+        dragDrop: false,  // CRITICAL: Disable drag and drop to allow text selection
         cursorBlinkRate: 530,  // Cursor blink rate
         cursorHeight: 1,  // Full height cursor
         showCursorWhenSelecting: true,  // Show cursor during selection
+        // CRITICAL: CodeMirror 5 - Use textarea input style for better compatibility
+        inputStyle: 'textarea'  // Use textarea (default) - more compatible
         extraKeys: {
             // Handle Tab key for indentation
             'Tab': (cm) => {
@@ -189,14 +191,27 @@ function initCodeEditor(textareaId, options = {}) {
             height: initialHeight,
             readOnly: editor.getOption('readOnly'),
             mode: editor.getOption('mode'),
-            hasValue: editor.getValue().length > 0
+            hasValue: editor.getValue().length > 0,
+            dragDrop: editor.getOption('dragDrop'),
+            inputStyle: editor.getOption('inputStyle')
         });
+        
+        // CRITICAL: Test selection functionality
+        setTimeout(() => {
+            const testSelection = editor.getSelection();
+            console.log(`🔍 Selection test:`, {
+                hasSelection: editor.somethingSelected(),
+                selectionText: testSelection,
+                selectionLength: testSelection.length
+            });
+        }, 200);
     }, 100);
 
     // CRITICAL: Track if this is first interaction to prevent text deletion
     let isFirstInteraction = true;
     
-    // CRITICAL: CodeMirror 5 - Handle mousedown without blocking selection
+    // CRITICAL: CodeMirror 5 - Selection should work by default
+    // CodeMirror 5 has built-in selection, we just need to ensure it's not blocked
     editor.on('mousedown', (cm, event) => {
         // If first interaction and all text is selected, deselect it
         if (isFirstInteraction) {
@@ -212,17 +227,15 @@ function initCodeEditor(textareaId, options = {}) {
             isFirstInteraction = false;
         }
         
-        // CRITICAL: Don't prevent default - let browser handle selection
-        // Focus after delay to allow native selection to work
-        setTimeout(() => {
-            if (!cm.hasFocus()) {
-                cm.focus();
-            }
-        }, 10);
-        
-        // Return undefined (not false) to allow default behavior
-        return undefined;
+        // Focus editor - CodeMirror will handle selection itself
+        if (!cm.hasFocus()) {
+            cm.focus();
+        }
     });
+    
+    // CRITICAL: Ensure CodeMirror's selection is visible and works
+    // CodeMirror 5 uses its own selection mechanism which should work by default
+    // We just need to make sure CSS doesn't block it
     
     // CRITICAL: Handle first keypress to prevent deletion
     editor.on('keydown', (cm, event) => {
