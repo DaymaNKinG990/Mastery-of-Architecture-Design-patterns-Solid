@@ -42,7 +42,7 @@ function initCodeEditor(textareaId, options = {}) {
         cursorHeight: 1,  // Full height cursor
         showCursorWhenSelecting: true,  // Show cursor during selection
         // CRITICAL: CodeMirror 5 - Use textarea input style for better compatibility
-        inputStyle: 'textarea'  // Use textarea (default) - more compatible
+        inputStyle: 'textarea',  // Use textarea (default) - more compatible
         extraKeys: {
             // Handle Tab key for indentation
             'Tab': (cm) => {
@@ -210,8 +210,13 @@ function initCodeEditor(textareaId, options = {}) {
     // CRITICAL: Track if this is first interaction to prevent text deletion
     let isFirstInteraction = true;
     
-    // CRITICAL: CodeMirror 5 - Selection should work by default
-    // CodeMirror 5 has built-in selection, we just need to ensure it's not blocked
+    // CRITICAL: CodeMirror 5 - Proper selection handling
+    // CodeMirror 5 uses its own selection mechanism via mouse events
+    // We need to ensure events are not blocked and selection works correctly
+    
+    let selectionStart = null;
+    let isSelecting = false;
+    
     editor.on('mousedown', (cm, event) => {
         // If first interaction and all text is selected, deselect it
         if (isFirstInteraction) {
@@ -227,15 +232,46 @@ function initCodeEditor(textareaId, options = {}) {
             isFirstInteraction = false;
         }
         
-        // Focus editor - CodeMirror will handle selection itself
+        // CRITICAL: Get click position for selection start
+        const coords = cm.coordsChar({left: event.clientX, top: event.clientY});
+        if (coords) {
+            selectionStart = {line: coords.line, ch: coords.ch};
+            isSelecting = true;
+        }
+        
+        // Focus editor
         if (!cm.hasFocus()) {
             cm.focus();
         }
     });
     
+    // CRITICAL: Handle mouse move for drag selection
+    editor.on('mousemove', (cm, event) => {
+        if (isSelecting && selectionStart && event.buttons === 1) {
+            const coords = cm.coordsChar({left: event.clientX, top: event.clientY});
+            if (coords) {
+                const doc = cm.getDoc();
+                // Set selection from start to current position
+                doc.setSelection(selectionStart, {line: coords.line, ch: coords.ch});
+            }
+        }
+    });
+    
+    // CRITICAL: Handle mouse up to finalize selection
+    editor.on('mouseup', (cm, event) => {
+        if (isSelecting && selectionStart) {
+            const coords = cm.coordsChar({left: event.clientX, top: event.clientY});
+            if (coords) {
+                const doc = cm.getDoc();
+                doc.setSelection(selectionStart, {line: coords.line, ch: coords.ch});
+            }
+        }
+        isSelecting = false;
+        selectionStart = null;
+    });
+    
     // CRITICAL: Ensure CodeMirror's selection is visible and works
     // CodeMirror 5 uses its own selection mechanism which should work by default
-    // We just need to make sure CSS doesn't block it
     
     // CRITICAL: Handle first keypress to prevent deletion
     editor.on('keydown', (cm, event) => {
