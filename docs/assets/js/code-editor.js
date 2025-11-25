@@ -54,12 +54,14 @@ function initCodeEditor(textareaId, options = {}) {
             'Shift-Tab': (cm) => {
                 cm.indentSelection('subtract');
             },
-            // Ctrl/Cmd + A to select all
+            // Ctrl/Cmd + A to select all - CRITICAL: prevent default and select all
             'Ctrl-A': (cm) => {
                 cm.execCommand('selectAll');
+                return false; // Prevent default browser behavior
             },
             'Cmd-A': (cm) => {
                 cm.execCommand('selectAll');
+                return false; // Prevent default browser behavior
             },
             // Ctrl/Cmd + C to copy (explicit)
             'Ctrl-C': (cm) => {
@@ -89,8 +91,31 @@ function initCodeEditor(textareaId, options = {}) {
     // Merge user options with defaults
     const config = { ...defaultConfig, ...options };
 
+    // CRITICAL: Save initial value BEFORE CodeMirror replaces textarea
+    // Also check data-initial attribute as fallback
+    let initialValue = textarea.value || '';
+    if (!initialValue) {
+        const dataInitial = textarea.getAttribute('data-initial');
+        if (dataInitial) {
+            initialValue = dataInitial.replace(/\\n/g, '\n');
+        }
+    }
+    
     // Initialize CodeMirror
     const editor = CodeMirror.fromTextArea(textarea, config);
+    
+    // CRITICAL: Set initial value AFTER initialization
+    // Use setTimeout to ensure CodeMirror is fully ready
+    setTimeout(() => {
+        if (initialValue) {
+            editor.setValue(initialValue);
+            // CRITICAL: Place cursor at end, don't select all
+            const doc = editor.getDoc();
+            const lastLine = doc.lastLine();
+            const lastLineLength = doc.getLine(lastLine).length;
+            doc.setCursor(lastLine, lastLineLength);
+        }
+    }, 0);
 
     // Set initial size - use pixel height for proper scrolling
     const minHeight = 300;
@@ -99,6 +124,7 @@ function initCodeEditor(textareaId, options = {}) {
     
     // Auto-adjust height based on content (but within limits)
     editor.on('change', (cm) => {
+        // Sync with hidden textarea
         textarea.value = cm.getValue();
         
         // Auto-resize based on content
@@ -116,21 +142,83 @@ function initCodeEditor(textareaId, options = {}) {
     const initialHeight = Math.min(Math.max(initialLines * 20 + 20, minHeight), maxHeight);
     editor.setSize('100%', initialHeight);
 
+    // CRITICAL: Ensure editor is editable and focusable
+    editor.setOption('readOnly', false);
+    
     // Refresh editor to ensure proper rendering
     setTimeout(() => {
         editor.refresh();
+        
+        // Ensure initial value is set correctly
+        const currentValue = editor.getValue();
+        if (!currentValue && initialValue) {
+            editor.setValue(initialValue);
+        }
+        
         console.log(`✅ CodeMirror initialized for ${textareaId}`, {
-            lines: initialLines,
+            lines: editor.lineCount(),
             height: initialHeight,
             readOnly: editor.getOption('readOnly'),
-            mode: editor.getOption('mode')
+            mode: editor.getOption('mode'),
+            hasValue: editor.getValue().length > 0
         });
     }, 100);
 
-    // Focus editor on click
-    editor.on('mousedown', () => {
-        editor.focus();
+    // CRITICAL: Track if this is first interaction to prevent text deletion
+    let isFirstInteraction = true;
+    
+    // CRITICAL: Focus editor on click and ensure selection works
+    editor.on('mousedown', (cm, event) => {
+        // If first interaction and all text is selected, deselect it
+        if (isFirstInteraction) {
+            const allSelected = cm.somethingSelected() && 
+                               cm.getSelection() === cm.getValue();
+            if (allSelected) {
+                // Place cursor at end instead of selecting all
+                const doc = cm.getDoc();
+                const lastLine = doc.lastLine();
+                const lastLineLength = doc.getLine(lastLine).length;
+                doc.setCursor(lastLine, lastLineLength);
+            }
+            isFirstInteraction = false;
+        }
+        
+        // Allow default behavior for text selection
+        setTimeout(() => {
+            cm.focus();
+        }, 0);
     });
+    
+    // CRITICAL: Handle first keypress to prevent deletion
+    editor.on('keydown', (cm, event) => {
+        if (isFirstInteraction) {
+            // If all text is selected on first keypress, clear selection first
+            if (cm.somethingSelected() && cm.getSelection() === cm.getValue()) {
+                const doc = cm.getDoc();
+                const lastLine = doc.lastLine();
+                const lastLineLength = doc.getLine(lastLine).length;
+                doc.setCursor(lastLine, lastLineLength);
+            }
+            isFirstInteraction = false;
+        }
+    });
+    
+    // CRITICAL: Handle focus to ensure editor is active
+    editor.on('focus', (cm) => {
+        cm.setOption('readOnly', false);
+    });
+    
+    // CRITICAL: Ensure selection works on double/triple click
+    editor.on('dblclick', (cm) => {
+        // Double click selects word - let it work
+    });
+    
+    // CRITICAL: Prevent any interference with text selection
+    const wrapper = editor.getWrapperElement();
+    wrapper.style.userSelect = 'text';
+    wrapper.style.webkitUserSelect = 'text';
+    wrapper.style.mozUserSelect = 'text';
+    wrapper.style.msUserSelect = 'text';
 
     return editor;
 }
@@ -183,9 +271,25 @@ function initAllCodeEditors() {
     const textareas = document.querySelectorAll('textarea.code-textarea');
     
     textareas.forEach(textarea => {
+        // Skip if already initialized
+        if (editorInstances.has(textarea.id)) {
+            return;
+        }
+        
         // Only initialize if CodeMirror is loaded
         if (typeof CodeMirror !== 'undefined') {
-            initCodeEditor(textarea.id);
+            // CRITICAL: Wait a bit to ensure textarea has its initial value
+            setTimeout(() => {
+                const editor = initCodeEditor(textarea.id);
+                if (editor) {
+                    // Double-check initial value is set
+                    const textareaValue = textarea.value || '';
+                    const editorValue = editor.getValue();
+                    if (textareaValue && !editorValue) {
+                        editor.setValue(textareaValue);
+                    }
+                }
+            }, 50);
         } else {
             console.warn('CodeMirror not loaded, using plain textarea with Tab handling fallback');
             setupPlainTextareaTabHandling(textarea);
