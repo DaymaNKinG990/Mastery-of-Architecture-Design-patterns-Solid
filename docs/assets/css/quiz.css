@@ -884,7 +884,12 @@
     border-color: #dc3545;
 }
 
-.success-message, .error-message {
+.exercise-output.info {
+    background: rgba(23, 162, 184, 0.1);
+    border-color: #17a2b8;
+}
+
+.success-message, .error-message, .info-message {
     margin: 0;
 }
 
@@ -895,6 +900,11 @@
 
 .error-message h5 {
     color: #dc3545;
+    margin-bottom: 0.5rem;
+}
+
+.info-message h5 {
+    color: #17a2b8;
     margin-bottom: 0.5rem;
 }
 

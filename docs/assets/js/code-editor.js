@@ -54,14 +54,18 @@ function initCodeEditor(textareaId, options = {}) {
             'Shift-Tab': (cm) => {
                 cm.indentSelection('subtract');
             },
-            // Ctrl/Cmd + A to select all - CRITICAL: prevent default and select all
+            // Ctrl/Cmd + A to select all - CRITICAL: CodeMirror 5 API
             'Ctrl-A': (cm) => {
+                // CodeMirror 5: selectAll command
                 cm.execCommand('selectAll');
-                return false; // Prevent default browser behavior
+                // Return false to prevent browser default
+                return false;
             },
             'Cmd-A': (cm) => {
+                // CodeMirror 5: selectAll command  
                 cm.execCommand('selectAll');
-                return false; // Prevent default browser behavior
+                // Return false to prevent browser default
+                return false;
             },
             // Ctrl/Cmd + C to copy (explicit)
             'Ctrl-C': (cm) => {
@@ -145,6 +149,31 @@ function initCodeEditor(textareaId, options = {}) {
     // CRITICAL: Ensure editor is editable and focusable
     editor.setOption('readOnly', false);
     
+    // CRITICAL: CodeMirror 5 - Enable text selection on all elements
+    const wrapper = editor.getWrapperElement();
+    const scroller = editor.getScrollerElement();
+    
+    // Apply user-select to all CodeMirror DOM elements
+    [wrapper, scroller].forEach(el => {
+        if (el) {
+            el.style.userSelect = 'text';
+            el.style.webkitUserSelect = 'text';
+            el.style.mozUserSelect = 'text';
+            el.style.msUserSelect = 'text';
+            el.style.cursor = 'text';
+        }
+    });
+    
+    // CRITICAL: Apply to all line elements
+    setTimeout(() => {
+        const codeLines = wrapper.querySelectorAll('.CodeMirror-line');
+        codeLines.forEach(line => {
+            line.style.userSelect = 'text';
+            line.style.webkitUserSelect = 'text';
+            line.style.pointerEvents = 'auto';
+        });
+    }, 50);
+    
     // Refresh editor to ensure proper rendering
     setTimeout(() => {
         editor.refresh();
@@ -167,7 +196,7 @@ function initCodeEditor(textareaId, options = {}) {
     // CRITICAL: Track if this is first interaction to prevent text deletion
     let isFirstInteraction = true;
     
-    // CRITICAL: Focus editor on click and ensure selection works
+    // CRITICAL: CodeMirror 5 - Handle mousedown without blocking selection
     editor.on('mousedown', (cm, event) => {
         // If first interaction and all text is selected, deselect it
         if (isFirstInteraction) {
@@ -183,10 +212,16 @@ function initCodeEditor(textareaId, options = {}) {
             isFirstInteraction = false;
         }
         
-        // Allow default behavior for text selection
+        // CRITICAL: Don't prevent default - let browser handle selection
+        // Focus after delay to allow native selection to work
         setTimeout(() => {
-            cm.focus();
-        }, 0);
+            if (!cm.hasFocus()) {
+                cm.focus();
+            }
+        }, 10);
+        
+        // Return undefined (not false) to allow default behavior
+        return undefined;
     });
     
     // CRITICAL: Handle first keypress to prevent deletion

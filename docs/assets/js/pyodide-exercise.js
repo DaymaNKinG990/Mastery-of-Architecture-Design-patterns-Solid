@@ -172,7 +172,7 @@ for status, msg in test_results:
         
         if (result.success) {
             // Parse test results
-            if (result.testResult) {
+            if (result.testResult && testCases && testCases.length > 0) {
                 const lines = result.output.split('\n');
                 lines.forEach(line => {
                     if (line.includes('✅')) testsPassed++;
@@ -180,12 +180,17 @@ for status, msg in test_results:
                 });
             }
             
+            // CRITICAL: Only show success if all tests passed AND there are tests
+            const allTestsPassed = totalTests > 0 && testsPassed === totalTests;
+            
             displayResults(exerciseId, {
-                success: true,
+                success: allTestsPassed,
                 tests_passed: testsPassed,
                 total_tests: totalTests,
                 test_details: testDetails.join('<br>'),
-                output: result.output
+                output: result.output,
+                // Add message if no tests were run
+                noTestsRun: totalTests === 0
             });
         } else {
             displayResults(exerciseId, {

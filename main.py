@@ -188,7 +188,21 @@ function displayResults(exerciseId, data) {{
 
     output.style.display = 'block';
 
-    if (data.success) {{
+    // CRITICAL: Check if no tests were run
+    if (data.noTestsRun) {{
+        const noTestsHtml = `
+            <div class="info-message">
+                <h5>ℹ️ Код выполнен успешно</h5>
+                <div class="test-results">
+                    <p>Тесты не были запущены. Добавьте код и проверьте его выполнение.</p>
+                    ${{data.output ? `<div class="output-content"><pre>${{data.output}}</pre></div>` : ''}}
+                </div>
+            </div>
+        `;
+        outputContent.innerHTML = noTestsHtml;
+        output.className = 'exercise-output info';
+    }} else if (data.success && data.tests_passed === data.total_tests && data.total_tests > 0) {{
+        // CRITICAL: Only show success if ALL tests passed AND there are tests
         const successHtml = `
             <div class="success-message">
                 <h5>✅ Поздравляем! Все тесты пройдены!</h5>
