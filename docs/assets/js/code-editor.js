@@ -142,22 +142,6 @@ function initCodeEditor(textareaId, options = {}) {
     // Initialize CodeMirror
     const editor = CodeMirror.fromTextArea(textarea, config);
     
-    // CRITICAL: Set initial value AFTER initialization
-    // Use requestAnimationFrame to batch operations and avoid forced reflow
-    requestAnimationFrame(() => {
-        if (initialValue) {
-            editor.setValue(initialValue);
-            // CRITICAL: Place cursor at end, don't select all
-            // Batch cursor positioning to avoid forced reflow
-            requestAnimationFrame(() => {
-                const doc = editor.getDoc();
-                const lastLine = doc.lastLine();
-                const lastLineLength = doc.getLine(lastLine).length;
-                doc.setCursor(lastLine, lastLineLength);
-            });
-        }
-    });
-
     // Set initial size - use pixel height for proper scrolling
     const minHeight = 300;
     const maxHeight = 600;
@@ -190,11 +174,55 @@ function initCodeEditor(textareaId, options = {}) {
     // Auto-adjust height based on content (debounced to prevent forced reflow)
     editor.on('change', debouncedResize);
 
-    // Initial size adjustment - use requestAnimationFrame to avoid forced reflow
+    // CRITICAL: Set initial value AFTER initialization
+    // Use requestAnimationFrame to batch operations and avoid forced reflow
     requestAnimationFrame(() => {
-        const initialLines = editor.lineCount();
-        const initialHeight = Math.min(Math.max(initialLines * lineHeight + 20, minHeight), maxHeight);
-        editor.setSize('100%', initialHeight);
+        if (initialValue) {
+            // CRITICAL: Temporarily remove change listener to prevent debouncedResize from firing
+            // setValue() triggers 'change' synchronously, which would immediately call debouncedResize
+            // and schedule a competing setSize() call. We need to handle height calculation explicitly.
+            editor.off('change', debouncedResize);
+            
+            // CRITICAL: Cancel any pending debouncedResize to prevent race condition
+            if (resizeTimeout) {
+                cancelAnimationFrame(resizeTimeout);
+                resizeTimeout = null;
+            }
+            
+            editor.setValue(initialValue);
+            
+            // CRITICAL: Re-enable change listener after setValue() completes
+            editor.on('change', debouncedResize);
+            
+            // CRITICAL: Position cursor in next frame to avoid forced reflow
+            // getLine().length requires layout calculation, must be deferred
+            requestAnimationFrame(() => {
+                const doc = editor.getDoc();
+                const lastLine = doc.lastLine();
+                const lastLineLength = doc.getLine(lastLine).length;
+                doc.setCursor(lastLine, lastLineLength);
+                
+                // CRITICAL: Calculate height AFTER cursor positioning to ensure proper sequencing
+                // Height calculation must happen after cursor is positioned to reflect final layout state
+                requestAnimationFrame(() => {
+                    const initialLines = editor.lineCount();
+                    const initialHeight = Math.min(Math.max(initialLines * lineHeight + 20, minHeight), maxHeight);
+                    editor.setSize('100%', initialHeight);
+                });
+            });
+        } else {
+            // If no initial value, calculate height immediately
+            // CRITICAL: Cancel any pending debouncedResize to prevent race condition
+            if (resizeTimeout) {
+                cancelAnimationFrame(resizeTimeout);
+                resizeTimeout = null;
+            }
+            requestAnimationFrame(() => {
+                const initialLines = editor.lineCount();
+                const initialHeight = Math.min(Math.max(initialLines * lineHeight + 20, minHeight), maxHeight);
+                editor.setSize('100%', initialHeight);
+            });
+        }
     });
 
     // CRITICAL: Ensure editor is editable and focusable
@@ -217,16 +245,20 @@ function initCodeEditor(textareaId, options = {}) {
     
     // CRITICAL: Apply to all line elements - use requestAnimationFrame to avoid forced reflow
     requestAnimationFrame(() => {
-        const codeLines = wrapper.querySelectorAll('.CodeMirror-line');
-        // Batch DOM writes to avoid forced reflow
-        codeLines.forEach(line => {
-            line.style.userSelect = 'text';
-            line.style.webkitUserSelect = 'text';
-            line.style.pointerEvents = 'auto';
-        });
+        // CRITICAL: Check wrapper is not null before accessing its properties
+        if (wrapper) {
+            const codeLines = wrapper.querySelectorAll('.CodeMirror-line');
+            // Batch DOM writes to avoid forced reflow
+            codeLines.forEach(line => {
+                line.style.userSelect = 'text';
+                line.style.webkitUserSelect = 'text';
+                line.style.pointerEvents = 'auto';
+            });
+        }
     });
     
     // Refresh editor to ensure proper rendering - batch operations
+    // Use single requestAnimationFrame to avoid cascade of deferred frames
     requestAnimationFrame(() => {
         editor.refresh();
         
@@ -236,64 +268,56 @@ function initCodeEditor(textareaId, options = {}) {
             editor.setValue(initialValue);
         }
         
-        // Log initialization (only in development mode to reduce console noise)
+        // Log initialization and test selection in the same frame (only in debug mode)
+        // This avoids creating multiple nested requestAnimationFrame callbacks
         if (window.DEBUG_CODEMIRROR) {
-            requestAnimationFrame(() => {
-                const initialLines = editor.lineCount();
-                const initialHeight = Math.min(Math.max(initialLines * lineHeight + 20, minHeight), maxHeight);
-                console.log(`✅ CodeMirror initialized for ${textareaId}`, {
-                    lines: initialLines,
-                    height: initialHeight,
-                    readOnly: editor.getOption('readOnly'),
-                    mode: editor.getOption('mode'),
-                    hasValue: editor.getValue().length > 0,
-                    dragDrop: editor.getOption('dragDrop'),
-                    inputStyle: editor.getOption('inputStyle')
-                });
+            // Batch all non-layout reads together in the same frame
+            // CRITICAL: Avoid getComputedStyle() - it always causes forced reflow
+            const initialLines = editor.lineCount();
+            const initialHeight = Math.min(Math.max(initialLines * lineHeight + 20, minHeight), maxHeight);
+            const testSelection = editor.getSelection();
+            const doc = editor.getDoc();
+            
+            // Batch all operations in the same frame to avoid excessive delays
+            // Note: Removed getComputedStyle() to prevent forced reflow
+            const selectionInfo = {
+                hasSelection: editor.somethingSelected(),
+                selectionText: testSelection,
+                selectionLength: testSelection.length,
+                cursorPos: doc.getCursor(),
+                hasFocus: editor.hasFocus(),
+                readOnly: editor.getOption('readOnly'),
+                dragDrop: editor.getOption('dragDrop')
+                // wrapperUserSelect removed - getComputedStyle() causes forced reflow
+            };
+            
+            console.log(`✅ CodeMirror initialized for ${textareaId}`, {
+                lines: initialLines,
+                height: initialHeight,
+                readOnly: editor.getOption('readOnly'),
+                mode: editor.getOption('mode'),
+                hasValue: editor.getValue().length > 0,
+                dragDrop: editor.getOption('dragDrop'),
+                inputStyle: editor.getOption('inputStyle')
             });
-        }
-        
-        // CRITICAL: Test selection functionality (only in debug mode, batched to avoid forced reflow)
-        if (window.DEBUG_CODEMIRROR) {
-            requestAnimationFrame(() => {
-                const testSelection = editor.getSelection();
-                const doc = editor.getDoc();
-                
-                // Batch all layout reads together
-                const selectionInfo = {
-                    hasSelection: editor.somethingSelected(),
-                    selectionText: testSelection,
-                    selectionLength: testSelection.length,
-                    cursorPos: doc.getCursor(),
-                    hasFocus: editor.hasFocus(),
-                    readOnly: editor.getOption('readOnly'),
-                    dragDrop: editor.getOption('dragDrop')
-                };
-                
-                // Read computed style only once
-                requestAnimationFrame(() => {
-                    selectionInfo.wrapperUserSelect = window.getComputedStyle(wrapper).userSelect;
-                    console.log(`🔍 Selection test for ${textareaId}:`, selectionInfo);
-                    
-                    // Test programmatic selection (batched)
-                    requestAnimationFrame(() => {
-                        try {
-                            doc.setSelection({line: 0, ch: 0}, {line: 0, ch: 5});
-                            const testHasSelection = editor.somethingSelected();
-                            const testSelectionText = editor.getSelection();
-                            console.log(`🧪 Programmatic selection test:`, {
-                                success: testHasSelection,
-                                selectedText: testSelectionText,
-                                length: testSelectionText.length
-                            });
-                            // Clear test selection
-                            doc.setCursor({line: 0, ch: 0});
-                        } catch (e) {
-                            console.error(`❌ Selection API error:`, e);
-                        }
-                    });
+            
+            console.log(`🔍 Selection test for ${textareaId}:`, selectionInfo);
+            
+            // Test programmatic selection in the same frame
+            try {
+                doc.setSelection({line: 0, ch: 0}, {line: 0, ch: 5});
+                const testHasSelection = editor.somethingSelected();
+                const testSelectionText = editor.getSelection();
+                console.log(`🧪 Programmatic selection test:`, {
+                    success: testHasSelection,
+                    selectedText: testSelectionText,
+                    length: testSelectionText.length
                 });
-            });
+                // Clear test selection
+                doc.setCursor({line: 0, ch: 0});
+            } catch (e) {
+                console.error(`❌ Selection API error:`, e);
+            }
         }
     });
 
@@ -307,6 +331,10 @@ function initCodeEditor(textareaId, options = {}) {
     editor.on('mousedown', (cm, event) => {
         // If first interaction and all text is selected, deselect it
         if (isFirstInteraction) {
+            // CRITICAL: Set flag synchronously BEFORE RAF to prevent race condition
+            // If both mousedown and keydown fire rapidly, only the first will execute
+            isFirstInteraction = false;
+            
             // Batch layout reads to avoid forced reflow
             requestAnimationFrame(() => {
                 const allSelected = cm.somethingSelected() && 
@@ -319,7 +347,6 @@ function initCodeEditor(textareaId, options = {}) {
                     doc.setCursor(lastLine, lastLineLength);
                 }
             });
-            isFirstInteraction = false;
         }
         
         // Focus editor - CodeMirror will handle selection automatically
@@ -334,6 +361,10 @@ function initCodeEditor(textareaId, options = {}) {
     // CRITICAL: Handle first keypress to prevent deletion
     editor.on('keydown', (cm, event) => {
         if (isFirstInteraction) {
+            // CRITICAL: Set flag synchronously BEFORE RAF to prevent race condition
+            // If both mousedown and keydown fire rapidly, only the first will execute
+            isFirstInteraction = false;
+            
             // Batch layout reads to avoid forced reflow
             requestAnimationFrame(() => {
                 // If all text is selected on first keypress, clear selection first
@@ -344,7 +375,6 @@ function initCodeEditor(textareaId, options = {}) {
                     doc.setCursor(lastLine, lastLineLength);
                 }
             });
-            isFirstInteraction = false;
         }
     });
     

@@ -9,37 +9,64 @@ let pyodideInstance = null;
 /**
  * Initialize Pyodide runtime
  */
-async function initPyodide() {
+/**
+ * Initialize Pyodide runtime with retry mechanism
+ * @param {number} maxRetries - Maximum number of retry attempts (default: 2)
+ * @returns {Promise} - Pyodide instance
+ */
+async function initPyodide(maxRetries = 2) {
     if (pyodideInstance) {
         return pyodideInstance;
     }
     
-    try {
-        // Create timeout promise (30 seconds)
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => {
-                reject(new Error("Pyodide initialization timeout: CDN unreachable after 30 seconds"));
-            }, 30000);
-        });
-        
-        // Load Pyodide from CDN with timeout protection
-        const loadPromise = loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/"
-        });
-        
-        pyodideInstance = await Promise.race([loadPromise, timeoutPromise]);
-        
-        // Install common packages
-        await pyodideInstance.loadPackage(["micropip"]);
-        
-        console.log("✅ Pyodide initialized successfully");
-        return pyodideInstance;
-    } catch (error) {
-        console.error("❌ Failed to initialize Pyodide:", error);
-        // Reset instance on failure to allow retry
-        pyodideInstance = null;
-        throw error;
+    let lastError = null;
+    
+    // Retry mechanism for network issues
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            if (attempt > 0) {
+                // Wait before retry with exponential backoff
+                const delay = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+                console.log(`🔄 Retrying Pyodide initialization (attempt ${attempt + 1}/${maxRetries + 1}) after ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            
+            // Create timeout promise (30 seconds)
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error("Pyodide initialization timeout: CDN unreachable after 30 seconds"));
+                }, 30000);
+            });
+            
+            // Load Pyodide from CDN with timeout protection
+            const loadPromise = loadPyodide({
+                indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/"
+            });
+            
+            pyodideInstance = await Promise.race([loadPromise, timeoutPromise]);
+            
+            // Install common packages
+            await pyodideInstance.loadPackage(["micropip"]);
+            
+            console.log("✅ Pyodide initialized successfully");
+            return pyodideInstance;
+        } catch (error) {
+            lastError = error;
+            console.warn(`⚠️ Pyodide initialization attempt ${attempt + 1} failed:`, error.message);
+            
+            // Reset instance on failure to allow retry
+            pyodideInstance = null;
+            
+            // If this was the last attempt, throw the error
+            if (attempt === maxRetries) {
+                console.error("❌ Failed to initialize Pyodide after all retry attempts:", lastError);
+                throw new Error(`Pyodide initialization failed: ${lastError.message}. Please check your internet connection and try again.`);
+            }
+        }
     }
+    
+    // This should never be reached, but TypeScript/ESLint may require it
+    throw lastError || new Error("Pyodide initialization failed");
 }
 
 /**
